@@ -36,7 +36,8 @@ public class StatisticsFragment extends Fragment {
         ).get(StatisticsViewModel.class);
         viewDataBinding.setLifecycleOwner(this);
         viewDataBinding.setViewmodel(viewModel);
-        ViewUtil.setupRefreshLayout(getActivity(),viewDataBinding.refreshLayout,null);
+        ViewUtil.setupRefreshLayout(getActivity(), viewDataBinding.refreshLayout, null);
+        viewModel.refresh();
 
     }
 }
