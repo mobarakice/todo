@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
   ~ Copyright (C) 2019 The Android Open Source Project
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,12 @@
   ~ limitations under the License.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <item
-        android:id="@id/tasks_fragment_dest"
-        android:icon="@drawable/ic_list"
-        android:title="@string/list_title" />
-    <item
-        android:id="@id/statistics_fragment_dest"
-        android:icon="@drawable/ic_statistics"
-        android:title="@string/statistics_title" />
-</menu>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M19,3H5c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2zM9,17H7v-7h2v7zm4,0h-2V7h2v10zm4,0h-2v-4h2v4z" />
+</vector>

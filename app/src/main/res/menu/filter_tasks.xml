@@ -13,15 +13,14 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
-        android:id="@id/tasks_fragment_dest"
-        android:icon="@drawable/ic_list"
-        android:title="@string/list_title" />
+        android:id="@+id/all"
+        android:title="@string/nav_all" />
     <item
-        android:id="@id/statistics_fragment_dest"
-        android:icon="@drawable/ic_statistics"
-        android:title="@string/statistics_title" />
+        android:id="@+id/active"
+        android:title="@string/nav_active" />
+    <item
+        android:id="@+id/completed"
+        android:title="@string/nav_completed" />
 </menu>

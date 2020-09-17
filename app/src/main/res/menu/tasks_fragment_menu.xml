@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   ~ Copyright (C) 2019 The Android Open Source Project
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +15,19 @@
   ~ limitations under the License.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@id/tasks_fragment_dest"
-        android:icon="@drawable/ic_list"
-        android:title="@string/list_title" />
+        android:id="@+id/menu_filter"
+        android:title="@string/menu_filter"
+        android:icon="@drawable/ic_filter_list"
+        app:showAsAction="always" />
     <item
-        android:id="@id/statistics_fragment_dest"
-        android:icon="@drawable/ic_statistics"
-        android:title="@string/statistics_title" />
+        android:id="@+id/menu_clear"
+        android:title="@string/menu_clear"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_refresh"
+        android:title="@string/refresh"
+        app:showAsAction="never" />
 </menu>

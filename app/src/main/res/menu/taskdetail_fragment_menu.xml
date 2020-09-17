@@ -14,14 +14,11 @@
   ~ limitations under the License.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@id/tasks_fragment_dest"
-        android:icon="@drawable/ic_list"
-        android:title="@string/list_title" />
-    <item
-        android:id="@id/statistics_fragment_dest"
-        android:icon="@drawable/ic_statistics"
-        android:title="@string/statistics_title" />
+        android:id="@+id/menu_delete"
+        android:icon="@drawable/trash_icon"
+        android:title="@string/menu_delete_task"
+        app:showAsAction="always" />
 </menu>

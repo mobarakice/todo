@@ -20,6 +20,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    dataBinding {
+        enabled = true
+        enabledForTests = true
+    }
+
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
 }
 
 dependencies {
@@ -27,6 +37,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
     //Navigation component
     def nav_version = "2.3.0"
@@ -53,9 +64,10 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 
     //retrofit
-    implementation "com.google.code.gson:gson:2.8.6"
     implementation "com.squareup.retrofit2:retrofit:2.7.1"
-    implementation "com.squareup.okhttp3:okhttp:4.3.1"
+    implementation "com.squareup.retrofit2:converter-gson:2.7.1"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.3.1"
+
 
 
     testImplementation 'junit:junit:4.13'
