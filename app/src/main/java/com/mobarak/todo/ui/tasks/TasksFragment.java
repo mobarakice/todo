@@ -18,9 +18,9 @@ import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
 import com.mobarak.todo.R;
-import com.mobarak.todo.ui.base.ViewModelFactory;
 import com.mobarak.todo.data.AppRepositoryImpl;
 import com.mobarak.todo.databinding.TasksFragBinding;
+import com.mobarak.todo.ui.base.ViewModelFactory;
 import com.mobarak.todo.utility.ViewUtil;
 
 public class TasksFragment extends Fragment {
@@ -49,8 +49,6 @@ public class TasksFragment extends Fragment {
         ViewUtil.setupRefreshLayout(getActivity(), viewDataBinding.refreshLayout, null);
         setupFab();
         setupListAdapter();
-        setupNavigation();
-        setupSnackbar();
 
     }
 
@@ -69,7 +67,7 @@ public class TasksFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_clear:
-                viewModel.clearCompletedTasks();
+//                viewModel.clearCompletedTasks();
                 return true;
 
             case R.id.menu_filter:
@@ -84,28 +82,24 @@ public class TasksFragment extends Fragment {
     }
 
 
-    private void setupNavigation() {
-//        viewModel.openTaskEvent.observe(this, EventObserver {
-//            openTaskDetails(it)
-//        })
-//        viewModel.newTaskEvent.observe(this, EventObserver {
-//            navigateToAddNewTask()
-//        })
-    }
-
-    private void setupSnackbar() {
-//        view?.setupSnackbar(this, viewModel.snackbarText, Snackbar.LENGTH_SHORT)
-//        arguments?.let {
-//            viewModel.showEditResultMessage(args.userMessage)
-//        }
-    }
-
-
     private void showFilteringPopUpMenu() {
         View view = getActivity().findViewById(R.id.menu_filter);
         PopupMenu popup = new PopupMenu(getActivity(), view);
         popup.getMenuInflater().inflate(R.menu.filter_tasks, popup.getMenu());
-        popup.setOnMenuItemClickListener(item -> true);
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.active:
+                    viewModel.filterItems(FilterType.ACTIVE_TASKS);
+                    return true;
+                case R.id.completed:
+                    viewModel.filterItems(FilterType.COMPLETED_TASKS);
+                    return true;
+                case R.id.all:
+                    viewModel.filterItems(FilterType.ALL_TASKS);
+                    return true;
+            }
+            return false;
+        });
         popup.show();
     }
 

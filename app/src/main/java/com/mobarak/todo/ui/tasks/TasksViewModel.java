@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.DrawableRes;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.mobarak.todo.R;
@@ -12,6 +11,7 @@ import com.mobarak.todo.data.AppRepository;
 import com.mobarak.todo.data.db.entity.Task;
 import com.mobarak.todo.ui.base.BaseViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -30,6 +30,7 @@ public class TasksViewModel extends BaseViewModel {
     private MutableLiveData<Boolean> _forceUpdate = new MutableLiveData<Boolean>(false);
 
     public MutableLiveData<List<Task>> items = new MutableLiveData<>();
+    private MutableLiveData<List<Task>> _items = new MutableLiveData<>();
 
     public MutableLiveData<Boolean> dataLoading = new MutableLiveData<Boolean>();
     public MutableLiveData<Boolean> empty = new MutableLiveData<Boolean>();
@@ -103,15 +104,16 @@ public class TasksViewModel extends BaseViewModel {
         _tasksAddViewVisible.setValue(tasksAddVisible);
     }
 
-    public void clearCompletedTasks() {
-        // repository.getDbRepository().clearCompletedTasks();
-        //showSnackbarMessage(R.string.completed_tasks_cleared)
-    }
 
     public void completeTask(Task task, boolean completed) {
 
+        mDisposable.add(repository.getDbRepository().updateCompleted(task.getId(), completed)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(() -> Log.e(TAG, "no task found"),
+                        throwable -> Log.e(TAG, "no task found", throwable)));
+
         if (completed) {
-            //tasksRepository.completeTask(task)
             showSnackbarMessage(context.getString(R.string.task_marked_complete));
         } else {
             //tasksRepository.activateTask(task)
@@ -119,91 +121,57 @@ public class TasksViewModel extends BaseViewModel {
         }
     }
 
-    /**
-     * Called by the Data Binding library and the FAB's click listener.
-     */
-    public void addNewTask() {
-
-    }
-
-    /**
-     * Called by Data Binding.
-     */
-    public void openTask(long taskId) {
-
-    }
-
-//    fun showEditResultMessage(result:Int) {
-//        if (resultMessageShown) return
-//                when(result) {
-//            EDIT_RESULT_OK -> showSnackbarMessage(R.string.successfully_saved_task_message)
-//            ADD_EDIT_RESULT_OK -> showSnackbarMessage(R.string.successfully_added_task_message)
-//            DELETE_RESULT_OK -> showSnackbarMessage(R.string.successfully_deleted_task_message)
-//        }
-//        resultMessageShown = true
-//    }
-
     private void showSnackbarMessage(String message) {
         _snackbarText.setValue(message);
     }
-
-//    private fun filterTasks(tasksResult:Result<List<Task>>):LiveData<List<Task>>
-//
-//    {
-//        // TODO: This is a good case for liveData builder. Replace when stable.
-//        val result = MutableLiveData < List < Task >> ()
-//
-//        if (tasksResult is Success){
-//        isDataLoadingError.value = false
-//        viewModelScope.launch {
-//            result.value = filterItems(tasksResult.data, getSavedFilterType())
-//        }
-//    } else{
-//        result.value = emptyList()
-//        showSnackbarMessage(R.string.loading_tasks_error)
-//        isDataLoadingError.value = true
-//    }
-//
-//        return result
-//    }
 
 
     public void loadTasks() {
         mDisposable.add(repository.getDbRepository().observeTasks()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(tasks -> items.setValue(tasks),
+                .subscribe(tasks -> {
+                            _items.setValue(tasks);
+                            filterItems(FilterType.ALL_TASKS);
+                        },
                         throwable -> {
                             Log.e(TAG, "no task found", throwable);
                             empty();
                         }));
     }
 
-//    private fun filterItems(tasks:List<Task>, filteringType:TasksFilterType):List<Task>
-//
-//    {
-//        val tasksToShow = ArrayList < Task > ()
-//        // We filter the tasks based on the requestType
-//        for (task in tasks) {
-//            when(filteringType) {
-//                ALL_TASKS -> tasksToShow.add(task)
-//                ACTIVE_TASKS -> if (task.isActive) {
-//                    tasksToShow.add(task)
-//                }
-//                COMPLETED_TASKS -> if (task.isCompleted) {
-//                    tasksToShow.add(task)
-//                }
-//            }
-//        }
-//        return tasksToShow
-//    }
+    public void filterItems(FilterType filterType) {
+        List<Task> filterTask = new ArrayList<>();
+        switch (filterType) {
+            case ALL_TASKS:
+                filterTask.addAll(_items.getValue());
+                break;
+            case ACTIVE_TASKS:
+                for (Task task : _items.getValue()) {
+                    if (!task.isCompleted()) {
+                        filterTask.add(task);
+                    }
+                }
+                break;
+            case COMPLETED_TASKS:
+                for (Task task : _items.getValue()) {
+                    if (task.isCompleted()) {
+                        filterTask.add(task);
+                    }
+                }
+                break;
+        }
+
+        items.setValue(filterTask);
+
+    }
+
+    public void openTask(long id) {
+
+    }
 
     public void refresh() {
         _forceUpdate.setValue(true);
     }
-
-//    private FilterType getSavedFilterType()  {
-//        return savedStateHandle.get(TASKS_FILTER_SAVED_STATE_KEY) ?: ALL_TASKS;
-//    }
 
 }
