@@ -37,7 +37,7 @@ public class StatisticsViewModel extends BaseViewModel {
 
     public void refresh() {
         dataLoading.setValue(false);
-        mDisposable.add(repository.getDbRepository().getTasks()
+        mDisposable.add(repository.getDbRepository().observeTasks()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(items -> {
