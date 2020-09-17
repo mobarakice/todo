@@ -11,16 +11,16 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mobarak.todo.R;
 import com.mobarak.todo.ViewModelFactory;
 import com.mobarak.todo.data.AppRepositoryImpl;
-import com.mobarak.todo.databinding.TaskdetailFragBinding;
 import com.mobarak.todo.databinding.TasksFragBinding;
-import com.mobarak.todo.ui.taskdetail.TaskDetailViewModel;
 import com.mobarak.todo.utility.ViewUtil;
 
 public class TasksFragment extends Fragment {
@@ -60,7 +60,7 @@ public class TasksFragment extends Fragment {
     }
 
     @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_clear:
                 viewModel.clearCompletedTasks();
@@ -76,6 +76,7 @@ public class TasksFragment extends Fragment {
                 return false;
         }
     }
+
 
     private void setupNavigation() {
 //        viewModel.openTaskEvent.observe(this, EventObserver {
@@ -93,43 +94,39 @@ public class TasksFragment extends Fragment {
 //        }
     }
 
+
     private void showFilteringPopUpMenu() {
-//        val view = activity?.findViewById<View>(R.id.menu_filter) ?: return
-//                PopupMenu(requireContext(), view).run {
-//            menuInflater.inflate(R.menu.filter_tasks, menu)
-//
-//            setOnMenuItemClickListener {
-//                viewModel.setFiltering(
-//                        when (it.itemId) {
-//                    R.id.active -> TasksFilterType.ACTIVE_TASKS
-//                    R.id.completed -> TasksFilterType.COMPLETED_TASKS
-//                        else -> TasksFilterType.ALL_TASKS
-//                }
-//                )
-//                true
-//            }
-//            show()
-//        }
+        View view = getActivity().findViewById(R.id.menu_filter);
+        PopupMenu popup = new PopupMenu(getActivity(), view);
+        popup.getMenuInflater().inflate(R.menu.filter_tasks, popup.getMenu());
+        popup.setOnMenuItemClickListener(item -> true);
+        popup.show();
     }
 
     private void setupFab() {
+        viewDataBinding.getRoot().findViewById(R.id.add_task_fab).setOnClickListener(view -> {
+            NavDirections action = TasksFragmentDirections
+                    .actionTasksFragmentToAddEditTaskFragment(
+                            null,
+                            getActivity().getString(R.string.add_task)
+                    );
+            Navigation.findNavController(view).navigate(action);
+        });
     }
 
-    private void navigateToAddNewTask() {
 
-    }
-
-    private void openTaskDetails(long taskId) {
-//        val action = TasksFragmentDirections.actionTasksFragmentToTaskDetailFragment(taskId)
-//        findNavController().navigate(action)
+    private void openTaskDetails(View view, long taskId) {
+        NavDirections action = TasksFragmentDirections
+                .actionTasksFragmentToTaskDetailFragment(taskId);
+        Navigation.findNavController(view).navigate(action);
     }
 
     private void setupListAdapter() {
         if (viewModel != null) {
-//            listAdapter = TasksAdapter(viewModel);
-//            viewDataBinding.tasksList.adapter = listAdapter;
+            listAdapter = new TasksAdapter(viewModel);
+            viewDataBinding.tasksList.setAdapter(listAdapter);
         } else {
-            Log.i("","ViewModel not initialized when attempting to set up adapter.");
+            Log.i("", "ViewModel not initialized when attempting to set up adapter.");
         }
     }
 

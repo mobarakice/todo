@@ -3,7 +3,6 @@ package com.mobarak.todo.ui.tasks;
 import android.content.Context;
 
 import androidx.annotation.DrawableRes;
-import androidx.annotation.StringRes;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -14,8 +13,6 @@ import com.mobarak.todo.data.db.entity.Task;
 
 import java.util.List;
 
-import static com.mobarak.todo.ui.tasks.FilterType.ALL_TASKS;
-
 public class TasksViewModel extends ViewModel {
 
     private AppRepository repository;
@@ -25,22 +22,11 @@ public class TasksViewModel extends ViewModel {
     public TasksViewModel(Context context, AppRepository repository) {
         this.context = context;
         this.repository = repository;
-        // setFiltering(getSavedFilterType())
+         setFiltering(FilterType.ALL_TASKS);
         loadTasks(true);
     }
 
     private MutableLiveData<Boolean> _forceUpdate = new MutableLiveData<Boolean>(false);
-
-//    private val _items: LiveData<List<Task>> = _forceUpdate.switchMap { forceUpdate ->
-//        if (forceUpdate) {
-//            _dataLoading.value = true
-//            viewModelScope.launch {
-//                tasksRepository.refreshTasks()
-//                _dataLoading.value = false
-//            }
-//        }
-//        tasksRepository.observeTasks().distinctUntilChanged().switchMap { filterTasks(it) }
-//    }
 
     public LiveData<List<Task>> items = new MutableLiveData<List<Task>>();
 
@@ -62,7 +48,11 @@ public class TasksViewModel extends ViewModel {
 
 
     private boolean resultMessageShown = false;
-    public boolean empty = false;
+
+    public boolean empty() {
+        return true;
+//        return items.getValue() != null && items.getValue().size() <= 0;
+    }
 
 
     /**

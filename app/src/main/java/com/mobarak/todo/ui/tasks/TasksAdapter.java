@@ -16,7 +16,7 @@ public class TasksAdapter extends ListAdapter<Task, TasksAdapter.ViewHolder> {
 
     private TasksViewModel viewModel;
 
-    protected TasksAdapter(TasksViewModel viewModel) {
+    public TasksAdapter(TasksViewModel viewModel) {
         super(new TaskDiffCallback());
         this.viewModel = viewModel;
     }
