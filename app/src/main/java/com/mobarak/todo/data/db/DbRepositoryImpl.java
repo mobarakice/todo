@@ -9,6 +9,11 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 
+/**
+ * This Database repository implementation class, all business logic that related to database will be implemented here
+ *
+ * @author mobarak
+ */
 public class DbRepositoryImpl implements DbRepository {
 
     private static DbRepositoryImpl mInstance;

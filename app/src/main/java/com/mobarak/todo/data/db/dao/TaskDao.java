@@ -16,6 +16,7 @@ import io.reactivex.Single;
 
 /**
  * Data Access Object for the task table.
+ * @author mobarak
  */
 @Dao
 public interface TaskDao {

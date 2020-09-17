@@ -19,7 +19,6 @@ import io.reactivex.schedulers.Schedulers;
 
 public class TasksViewModel extends BaseViewModel {
 
-    private static final String TASKS_FILTER_SAVED_STATE_KEY = "TASKS_FILTER_SAVED_STATE_KEY";
     private static final String TAG = TasksViewModel.class.getSimpleName();
 
     public TasksViewModel(Context context, AppRepository repository) {
@@ -43,14 +42,6 @@ public class TasksViewModel extends BaseViewModel {
     private MutableLiveData<Boolean> _tasksAddViewVisible = new MutableLiveData<Boolean>();
 
     public MutableLiveData<String> _snackbarText = new MutableLiveData<String>();
-
-    // Not used at the moment
-    private MutableLiveData<Boolean> isDataLoadingError = new MutableLiveData<Boolean>();
-
-    private MutableLiveData<String> _openTaskEvent = new MutableLiveData<String>();
-
-
-    private boolean resultMessageShown = false;
 
     public void empty() {
         empty.setValue(items.getValue() != null && items.getValue().size() <= 0);

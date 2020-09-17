@@ -7,6 +7,10 @@ import androidx.room.PrimaryKey;
 
 import com.mobarak.todo.utility.Utility;
 
+/**
+ * This is entity class
+ * @author mobarak
+ */
 @Entity(tableName = "tasks")
 public class Task {
     @PrimaryKey(autoGenerate = true)

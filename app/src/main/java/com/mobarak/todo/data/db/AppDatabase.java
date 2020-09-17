@@ -11,6 +11,7 @@ import com.mobarak.todo.data.db.entity.Task;
 
 /**
  * The Room database that contains the task table
+ * @author mobarak
  */
 @Database(entities = {Task.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {

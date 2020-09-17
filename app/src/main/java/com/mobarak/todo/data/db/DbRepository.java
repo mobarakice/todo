@@ -8,6 +8,10 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 
+/**
+ * This is repository class for database and handle all kind of database operation through this
+ * @author mobarak
+ */
 public interface DbRepository {
     Flowable<List<Task>> observeTasks();
 

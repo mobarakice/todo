@@ -8,8 +8,14 @@ import com.mobarak.todo.data.AppRepository;
 
 import io.reactivex.disposables.CompositeDisposable;
 
+/**
+ * This is base view model and it provides all common properties to child viewmodel
+ *
+ * @author mobarak
+ */
 public class BaseViewModel extends ViewModel {
 
+    // Rxjava disposal
     protected CompositeDisposable mDisposable = new CompositeDisposable();
     protected AppRepository repository;
     protected Context context;

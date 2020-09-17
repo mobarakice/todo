@@ -16,6 +16,11 @@ import com.mobarak.todo.ui.statistics.StatisticsViewModel;
 import com.mobarak.todo.ui.taskdetail.TaskDetailViewModel;
 import com.mobarak.todo.ui.tasks.TasksViewModel;
 
+/**
+ * This view model factory class, all viewmodel will be instantiated via this class
+ *
+ * @author mobarak
+ */
 public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
 
     private AppRepository repository;
@@ -32,11 +37,14 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
     protected <T extends ViewModel> T create(@NonNull String key, @NonNull Class<T> modelClass, @NonNull SavedStateHandle handle) {
         if (modelClass.equals(TasksViewModel.class)) {
             return (T) new TasksViewModel(context, repository);
-        }if (modelClass.equals(StatisticsViewModel.class)) {
+        }
+        if (modelClass.equals(StatisticsViewModel.class)) {
             return (T) new StatisticsViewModel(context, repository);
-        }if (modelClass.equals(AddEditTaskViewModel.class)) {
+        }
+        if (modelClass.equals(AddEditTaskViewModel.class)) {
             return (T) new AddEditTaskViewModel(context, repository);
-        } if (modelClass.equals(TaskDetailViewModel.class)) {
+        }
+        if (modelClass.equals(TaskDetailViewModel.class)) {
             return (T) new TaskDetailViewModel(context, repository);
         } else {
             throw new IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}");

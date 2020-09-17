@@ -29,12 +29,9 @@ public class TaskDetailViewModel extends BaseViewModel {
 
 
     public void deleteTask() {
-//        tasksRepository.deleteTask(it)
-//        deleteTaskEvent.value = Event(Unit)
     }
 
     public void editTask() {
-//        editTaskEvent.value = Event(Unit)
     }
 
     public void setCompleted(Boolean completed) {
@@ -64,9 +61,6 @@ public class TaskDetailViewModel extends BaseViewModel {
     public void refresh() {
         // Refresh the repository and the task will be updated automatically.
         if (task != null && task.getValue() != null) {
-//            dataLoading.setValue(true);
-//            repository.refreshTask(_taskId.getValue());
-//            dataLoading.setValue(true);
         }
     }
 

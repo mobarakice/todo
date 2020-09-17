@@ -7,6 +7,11 @@ import com.mobarak.todo.data.preference.PreferenceRepositoryImpl;
 import com.mobarak.todo.data.remote.RemoteRepository;
 import com.mobarak.todo.data.remote.RemoteRepositoryImpl;
 
+/**
+ * This app repository implementation class and used to access all kind of data like local, preference or remote(network)
+ *
+ * @author mobarak
+ */
 public class AppRepositoryImpl implements AppRepository {
     private static AppRepositoryImpl mInstance;
     private DbRepository dbRepository;

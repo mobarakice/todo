@@ -97,16 +97,17 @@ public class AddEditTaskViewModel extends BaseViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(() -> taskUpdatedEvent.setValue(true),
-                        throwable -> Log.e(TAG, "new task addition fail", throwable)));
+                        throwable -> Log.e(TAG, "new task adding failed", throwable)));
     }
 
     private void updateTask(Task task) {
         if (isNewTask) {
             throw new RuntimeException("updateTask() was called but task is new.");
         }
-//        viewModelScope.launch {
-//            tasksRepository.saveTask(task)
-//            _taskUpdatedEvent.value = Event(Unit)
-//        }
+        mDisposable.add(repository.getDbRepository().updateTask(task)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(() -> taskUpdatedEvent.setValue(true),
+                        throwable -> Log.e(TAG, "task updating failed", throwable)));
     }
 }
