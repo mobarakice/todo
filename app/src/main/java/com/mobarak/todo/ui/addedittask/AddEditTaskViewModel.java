@@ -1,6 +1,7 @@
 package com.mobarak.todo.ui.addedittask;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -8,25 +9,27 @@ import androidx.lifecycle.ViewModel;
 import com.mobarak.todo.R;
 import com.mobarak.todo.data.AppRepository;
 import com.mobarak.todo.data.db.entity.Task;
+import com.mobarak.todo.ui.base.BaseViewModel;
 import com.mobarak.todo.utility.Utility;
 
-public class AddEditTaskViewModel extends ViewModel {
-    private AppRepository repository;
-    private Context context;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
+public class AddEditTaskViewModel extends BaseViewModel {
+    private static final String TAG = AddEditTaskViewModel.class.getSimpleName();
 
     public AddEditTaskViewModel(Context context, AppRepository repository) {
-        this.context = context;
-        this.repository = repository;
+        super(context, repository);
     }
 
     // Two-way databinding, exposing MutableLiveData
     public MutableLiveData<String> title = new MutableLiveData<String>();
     public MutableLiveData<String> description = new MutableLiveData<String>();
-    public MutableLiveData<Boolean> dataLoading = new MutableLiveData<Boolean>();
+    public MutableLiveData<Boolean> dataLoading = new MutableLiveData<Boolean>(false);
 
     public MutableLiveData<String> _snackbarText = new MutableLiveData<String>();
 
-    public MutableLiveData<String> _taskUpdatedEvent = new MutableLiveData<String>();
+    public MutableLiveData<Boolean> taskUpdatedEvent = new MutableLiveData<>(false);
 
 
     private Long taskId = null;
@@ -37,13 +40,13 @@ public class AddEditTaskViewModel extends ViewModel {
 
     private boolean taskCompleted = false;
 
-    private void start(Long taskId) {
+    public void start(Long taskId) {
         if (dataLoading.getValue()) {
             return;
         }
 
         this.taskId = taskId;
-        if (taskId == null) {
+        if (taskId == null || taskId == -1) {
             // No need to populate, it's a new task
             isNewTask = true;
             return;
@@ -56,15 +59,6 @@ public class AddEditTaskViewModel extends ViewModel {
         isNewTask = false;
         dataLoading.setValue(true);
 
-//        viewModelScope.launch {
-//            tasksRepository.getTask(taskId).let { result ->
-//                if (result is Success) {
-//                    onTaskLoaded(result.data)
-//                } else {
-//                    onDataNotAvailable()
-//                }
-//            }
-//        }
     }
 
     private void onTaskLoaded(Task task) {
@@ -99,8 +93,11 @@ public class AddEditTaskViewModel extends ViewModel {
     }
 
     private void createTask(Task newTask) {
-//        tasksRepository.saveTask(newTask);
-//        _taskUpdatedEvent.value = Event(Unit)
+        mDisposable.add(repository.getDbRepository().insertTask(newTask)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(() -> taskUpdatedEvent.setValue(true),
+                        throwable -> Log.e(TAG, "new task addition fail", throwable)));
     }
 
     private void updateTask(Task task) {

@@ -1,9 +1,10 @@
-package com.mobarak.todo;
+package com.mobarak.todo.ui.base;
 
 import android.os.Bundle;
 import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.mobarak.todo.R;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

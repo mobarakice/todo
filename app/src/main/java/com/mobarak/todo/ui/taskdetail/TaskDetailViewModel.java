@@ -8,15 +8,12 @@ import androidx.lifecycle.ViewModel;
 import com.mobarak.todo.R;
 import com.mobarak.todo.data.AppRepository;
 import com.mobarak.todo.data.db.entity.Task;
+import com.mobarak.todo.ui.base.BaseViewModel;
 
-public class TaskDetailViewModel extends ViewModel {
-
-    private AppRepository repository;
-    private Context context;
+public class TaskDetailViewModel extends BaseViewModel {
 
     public TaskDetailViewModel(Context context, AppRepository repository) {
-        this.context = context;
-        this.repository = repository;
+        super(context, repository);
     }
 
     private MutableLiveData<Long> _taskId = new MutableLiveData<Long>();

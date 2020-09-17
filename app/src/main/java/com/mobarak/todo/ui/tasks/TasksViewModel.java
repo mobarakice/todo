@@ -1,36 +1,38 @@
 package com.mobarak.todo.ui.tasks;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.DrawableRes;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.mobarak.todo.R;
 import com.mobarak.todo.data.AppRepository;
 import com.mobarak.todo.data.db.entity.Task;
+import com.mobarak.todo.ui.base.BaseViewModel;
 
 import java.util.List;
 
-public class TasksViewModel extends ViewModel {
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
-    private AppRepository repository;
-    private Context context;
+public class TasksViewModel extends BaseViewModel {
+
     private static final String TASKS_FILTER_SAVED_STATE_KEY = "TASKS_FILTER_SAVED_STATE_KEY";
+    private static final String TAG = TasksViewModel.class.getSimpleName();
 
     public TasksViewModel(Context context, AppRepository repository) {
-        this.context = context;
-        this.repository = repository;
-         setFiltering(FilterType.ALL_TASKS);
-        loadTasks(true);
+        super(context, repository);
+        setFiltering(FilterType.ALL_TASKS);
     }
 
     private MutableLiveData<Boolean> _forceUpdate = new MutableLiveData<Boolean>(false);
 
-    public LiveData<List<Task>> items = new MutableLiveData<List<Task>>();
+    public MutableLiveData<List<Task>> items = new MutableLiveData<>();
 
     public MutableLiveData<Boolean> dataLoading = new MutableLiveData<Boolean>();
+    public MutableLiveData<Boolean> empty = new MutableLiveData<Boolean>();
 
     public MutableLiveData<String> currentFilteringLabel = new MutableLiveData<>();
     public MutableLiveData<String> noTasksLabel = new MutableLiveData<>();
@@ -49,9 +51,8 @@ public class TasksViewModel extends ViewModel {
 
     private boolean resultMessageShown = false;
 
-    public boolean empty() {
-        return true;
-//        return items.getValue() != null && items.getValue().size() <= 0;
+    public void empty() {
+        empty.setValue(items.getValue() != null && items.getValue().size() <= 0);
     }
 
 
@@ -87,7 +88,7 @@ public class TasksViewModel extends ViewModel {
                 break;
         }
         // Refresh list
-        loadTasks(false);
+        loadTasks();
     }
 
     private void setFilter(
@@ -166,11 +167,16 @@ public class TasksViewModel extends ViewModel {
 //        return result
 //    }
 
-    /**
-     * @param forceUpdate Pass in true to refresh the data in the [TasksDataSource]
-     */
-    public void loadTasks(Boolean forceUpdate) {
-        _forceUpdate.setValue(forceUpdate);
+
+    public void loadTasks() {
+        mDisposable.add(repository.getDbRepository().observeTasks()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(tasks -> items.setValue(tasks),
+                        throwable -> {
+                            Log.e(TAG, "no task found", throwable);
+                            empty();
+                        }));
     }
 
 //    private fun filterItems(tasks:List<Task>, filteringType:TasksFilterType):List<Task>

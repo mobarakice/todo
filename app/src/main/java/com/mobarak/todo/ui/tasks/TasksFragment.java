@@ -18,7 +18,7 @@ import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
 import com.mobarak.todo.R;
-import com.mobarak.todo.ViewModelFactory;
+import com.mobarak.todo.ui.base.ViewModelFactory;
 import com.mobarak.todo.data.AppRepositoryImpl;
 import com.mobarak.todo.databinding.TasksFragBinding;
 import com.mobarak.todo.utility.ViewUtil;
@@ -55,6 +55,12 @@ public class TasksFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        viewModel.loadTasks();
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.tasks_fragment_menu, menu);
     }
@@ -70,7 +76,7 @@ public class TasksFragment extends Fragment {
                 showFilteringPopUpMenu();
                 return true;
             case R.id.menu_refresh:
-                viewModel.loadTasks(true);
+                viewModel.loadTasks();
                 return true;
             default:
                 return false;
@@ -107,7 +113,7 @@ public class TasksFragment extends Fragment {
         viewDataBinding.getRoot().findViewById(R.id.add_task_fab).setOnClickListener(view -> {
             NavDirections action = TasksFragmentDirections
                     .actionTasksFragmentToAddEditTaskFragment(
-                            null,
+                            -1,
                             getActivity().getString(R.string.add_task)
                     );
             Navigation.findNavController(view).navigate(action);

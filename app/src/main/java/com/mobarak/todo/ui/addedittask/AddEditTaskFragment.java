@@ -4,20 +4,22 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import com.mobarak.todo.R;
-import com.mobarak.todo.ViewModelFactory;
+import com.mobarak.todo.ui.base.ViewModelFactory;
 import com.mobarak.todo.data.AppRepositoryImpl;
 import com.mobarak.todo.databinding.AddtaskFragBinding;
-import com.mobarak.todo.ui.home.HomeViewModel;
+import com.mobarak.todo.ui.tasks.TasksFragmentDirections;
+import com.mobarak.todo.utility.Utility;
 import com.mobarak.todo.utility.ViewUtil;
 
 public class AddEditTaskFragment extends Fragment {
@@ -25,6 +27,7 @@ public class AddEditTaskFragment extends Fragment {
     private AddEditTaskViewModel viewModel;
 
     private AddtaskFragBinding viewDataBinding;
+    private AddEditTaskFragmentArgs args;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -42,17 +45,20 @@ public class AddEditTaskFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-//        setupNavigation();
+        args = AddEditTaskFragmentArgs.fromBundle(getArguments());
+        setupNavigation();
         ViewUtil.setupRefreshLayout(requireActivity(), viewDataBinding.refreshLayout, null);
-//        viewModel.start(args.taskId)
+        viewModel.start(args.getTaskId());
     }
 
 
-//    private fun setupNavigation() {
-//        viewModel.taskUpdatedEvent.observe(this, EventObserver {
-//            val action = AddEditTaskFragmentDirections
-//                    .actionAddEditTaskFragmentToTasksFragment(ADD_EDIT_RESULT_OK)
-//            findNavController().navigate(action)
-//        })
-//    }
+    private void setupNavigation() {
+        viewModel.taskUpdatedEvent.observe(getActivity(), status -> {
+            if (status) {
+                NavDirections action = AddEditTaskFragmentDirections
+                        .actionAddEditTaskFragmentToTasksFragment();
+                NavHostFragment.findNavController(this).navigate(action);
+            }
+        });
+    }
 }

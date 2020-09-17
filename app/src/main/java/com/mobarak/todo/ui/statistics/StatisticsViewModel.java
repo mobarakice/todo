@@ -8,17 +8,15 @@ import androidx.lifecycle.ViewModel;
 
 import com.mobarak.todo.data.AppRepository;
 import com.mobarak.todo.data.db.entity.Task;
+import com.mobarak.todo.ui.base.BaseViewModel;
 
 import java.util.List;
 
-public class StatisticsViewModel extends ViewModel {
+public class StatisticsViewModel extends BaseViewModel {
 
-    private AppRepository repository;
-    private Context context;
 
     public StatisticsViewModel(Context context, AppRepository repository) {
-        this.context = context;
-        this.repository = repository;
+        super(context, repository);
     }
 
     private LiveData<List<Task>> tasks = new MutableLiveData<>(); /*tasksRepository.observeTasks()*/

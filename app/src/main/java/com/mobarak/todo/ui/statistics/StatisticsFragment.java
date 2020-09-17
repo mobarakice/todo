@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.mobarak.todo.R;
-import com.mobarak.todo.ViewModelFactory;
+import com.mobarak.todo.ui.base.ViewModelFactory;
 import com.mobarak.todo.data.AppRepositoryImpl;
 import com.mobarak.todo.databinding.StatisticsFragBinding;
 import com.mobarak.todo.utility.ViewUtil;

@@ -1,4 +1,4 @@
-package com.mobarak.todo;
+package com.mobarak.todo.ui.base;
 
 import android.content.Context;
 import android.os.Bundle;

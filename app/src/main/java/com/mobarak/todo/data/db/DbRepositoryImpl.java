@@ -1,6 +1,6 @@
 package com.mobarak.todo.data.db;
 
-import com.mobarak.todo.AppApplication;
+import com.mobarak.todo.ui.base.AppApplication;
 import com.mobarak.todo.data.db.entity.Task;
 
 import java.util.List;
