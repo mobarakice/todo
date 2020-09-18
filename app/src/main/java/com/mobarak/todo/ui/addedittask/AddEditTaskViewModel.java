@@ -27,7 +27,15 @@ public class AddEditTaskViewModel extends BaseViewModel {
     public MutableLiveData<String> description = new MutableLiveData<String>();
     public MutableLiveData<Boolean> dataLoading = new MutableLiveData<Boolean>(false);
 
-    public MutableLiveData<String> _snackbarText = new MutableLiveData<String>();
+    private MutableLiveData<String> snackbarText = new MutableLiveData<String>();
+
+    public MutableLiveData<String> getSnackbarText() {
+        return snackbarText;
+    }
+
+    public void setSnackbarText(String message) {
+        snackbarText.setValue(message);
+    }
 
     public MutableLiveData<Boolean> taskUpdatedEvent = new MutableLiveData<>(false);
 
@@ -91,7 +99,7 @@ public class AddEditTaskViewModel extends BaseViewModel {
         String currentDescription = description.getValue();
 
         if (Utility.isNullOrEmpty(currentTitle) || Utility.isNullOrEmpty(currentDescription)) {
-            _snackbarText.setValue(context.getString(R.string.empty_task_message));
+            setSnackbarText(context.getString(R.string.empty_task_message));
             return;
         }
 
@@ -108,7 +116,10 @@ public class AddEditTaskViewModel extends BaseViewModel {
         mDisposable.add(repository.getDbRepository().insertTask(newTask)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> taskUpdatedEvent.setValue(true),
+                .subscribe(() -> {
+                            setSnackbarText(context.getString(R.string.successfully_added_task_message));
+                            taskUpdatedEvent.setValue(true);
+                        },
                         throwable -> Log.e(TAG, "new task adding failed", throwable)));
     }
 
@@ -119,7 +130,10 @@ public class AddEditTaskViewModel extends BaseViewModel {
         mDisposable.add(repository.getDbRepository().updateTask(task)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> taskUpdatedEvent.setValue(true),
+                .subscribe(() -> {
+                            setSnackbarText(context.getString(R.string.successfully_added_task_message));
+                            taskUpdatedEvent.setValue(true);
+                        },
                         throwable -> Log.e(TAG, "task updating failed", throwable)));
     }
 }

@@ -51,8 +51,8 @@ public class TasksViewModel extends BaseViewModel {
         snackbarText.setValue(message);
     }
 
-    public void empty() {
-        empty.setValue(tasks.getValue() == null || tasks.getValue().size() <= 0);
+    public void empty(List<Task> items) {
+        empty.setValue(items == null || items.size() <= 0);
     }
 
 
@@ -88,7 +88,6 @@ public class TasksViewModel extends BaseViewModel {
                 break;
         }
         // Refresh list
-        empty();
     }
 
     private void setFilter(
@@ -128,7 +127,7 @@ public class TasksViewModel extends BaseViewModel {
                         },
                         throwable -> {
                             Log.e(TAG, "no task found", throwable);
-                            empty();
+                            empty(tasks.getValue());
                         }));
     }
 
@@ -156,6 +155,7 @@ public class TasksViewModel extends BaseViewModel {
         }
 
         filteredTasks.setValue(filterTask);
+        empty(filteredTasks.getValue());
 
     }
 

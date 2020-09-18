@@ -48,10 +48,18 @@ public class AddEditTaskFragment extends Fragment {
         assert getArguments() != null;
         args = AddEditTaskFragmentArgs.fromBundle(getArguments());
         setupNavigation();
+        setupSnackbar();
         ViewUtil.setupRefreshLayout(requireActivity(), viewDataBinding.refreshLayout, null);
         viewModel.start(args.getTaskId());
     }
 
+
+    private void setupSnackbar() {
+        if (getActivity() != null)
+            viewModel.getSnackbarText().observe(getActivity(), message -> {
+                ViewUtil.showSnackbar(viewDataBinding.getRoot(), message);
+            });
+    }
 
     private void setupNavigation() {
         if (getActivity() != null)
