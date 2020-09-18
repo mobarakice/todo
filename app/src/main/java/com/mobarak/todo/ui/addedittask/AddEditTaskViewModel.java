@@ -41,7 +41,7 @@ public class AddEditTaskViewModel extends BaseViewModel {
     private boolean taskCompleted = false;
 
     public void start(Long taskId) {
-        if (dataLoading.getValue()) {
+        if (dataLoading.getValue() != null && dataLoading.getValue()) {
             return;
         }
 
@@ -58,7 +58,19 @@ public class AddEditTaskViewModel extends BaseViewModel {
 
         isNewTask = false;
         dataLoading.setValue(true);
+        loadTask(taskId);
 
+    }
+
+    private void loadTask(long taskId) {
+        mDisposable.add(repository.getDbRepository().observeTaskById(taskId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::onTaskLoaded,
+                        throwable -> {
+                            onDataNotAvailable();
+                            Log.e(TAG, "no task found", throwable);
+                        }));
     }
 
     private void onTaskLoaded(Task task) {

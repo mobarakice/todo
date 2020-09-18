@@ -1,16 +1,27 @@
 package com.mobarak.todo.ui.taskdetail;
 
 import android.content.Context;
+import android.util.Log;
+import android.view.View;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 
 import com.mobarak.todo.R;
 import com.mobarak.todo.data.AppRepository;
 import com.mobarak.todo.data.db.entity.Task;
 import com.mobarak.todo.ui.base.BaseViewModel;
+import com.mobarak.todo.ui.tasks.FilterType;
+import com.mobarak.todo.ui.tasks.TasksFragmentDirections;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class TaskDetailViewModel extends BaseViewModel {
+
+    private static final String TAG = TaskDetailViewModel.class.getSimpleName();
 
     public TaskDetailViewModel(Context context, AppRepository repository) {
         super(context, repository);
@@ -31,7 +42,12 @@ public class TaskDetailViewModel extends BaseViewModel {
     public void deleteTask() {
     }
 
-    public void editTask() {
+    public void editTask(View view) {
+        if (_taskId.getValue() != null) {
+            NavDirections action = TaskDetailFragmentDirections
+                    .actionTaskDetailFragmentToAddEditTaskFragment(_taskId.getValue(), context.getString(R.string.add_task));
+            Navigation.findNavController(view).navigate(action);
+        }
     }
 
     public void setCompleted(Boolean completed) {
@@ -47,11 +63,26 @@ public class TaskDetailViewModel extends BaseViewModel {
 
     public void start(long taskId) {
         // If we're already loading or already loaded, return (might be a config change)
-        if (dataLoading.getValue() || taskId == _taskId.getValue()) {
+        if ((dataLoading.getValue() != null && dataLoading.getValue())
+                || (_taskId.getValue() != null && taskId == _taskId.getValue())) {
             return;
         }
         // Trigger the load
         _taskId.setValue(taskId);
+        loadTask();
+    }
+
+    private void loadTask() {
+        mDisposable.add(repository.getDbRepository().observeTaskById(_taskId.getValue())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(item -> {
+                            task.setValue(item);
+                            isDataAvailable.setValue(true);
+                        },
+                        throwable -> {
+                            Log.e(TAG, "no task found", throwable);
+                        }));
     }
 
     private Task computeResult() {

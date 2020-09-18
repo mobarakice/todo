@@ -106,10 +106,7 @@ public class TasksFragment extends Fragment {
     private void setupFab() {
         viewDataBinding.getRoot().findViewById(R.id.add_task_fab).setOnClickListener(view -> {
             NavDirections action = TasksFragmentDirections
-                    .actionTasksFragmentToAddEditTaskFragment(
-                            -1,
-                            getActivity().getString(R.string.add_task)
-                    );
+                    .actionTasksFragmentToAddEditTaskFragment(-1, getActivity().getString(R.string.add_task));
             Navigation.findNavController(view).navigate(action);
         });
     }

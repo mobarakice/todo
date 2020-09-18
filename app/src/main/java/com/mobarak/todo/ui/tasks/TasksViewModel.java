@@ -2,9 +2,12 @@ package com.mobarak.todo.ui.tasks;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.DrawableRes;
 import androidx.lifecycle.MutableLiveData;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 
 import com.mobarak.todo.R;
 import com.mobarak.todo.data.AppRepository;
@@ -157,8 +160,10 @@ public class TasksViewModel extends BaseViewModel {
 
     }
 
-    public void openTask(long id) {
-
+    public void openTask(View view, long taskId) {
+        NavDirections action = TasksFragmentDirections
+                .actionTasksFragmentToTaskDetailFragment(taskId);
+        Navigation.findNavController(view).navigate(action);
     }
 
     public void refresh() {

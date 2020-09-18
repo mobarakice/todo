@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.mobarak.todo.R;
+import com.mobarak.todo.ui.addedittask.AddEditTaskFragmentArgs;
 import com.mobarak.todo.ui.base.ViewModelFactory;
 import com.mobarak.todo.data.AppRepositoryImpl;
 import com.mobarak.todo.databinding.TaskdetailFragBinding;
@@ -23,6 +24,7 @@ public class TaskDetailFragment extends Fragment {
 
     private TaskDetailViewModel viewModel;
     private TaskdetailFragBinding viewDataBinding;
+    private TaskDetailFragmentArgs args;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -38,7 +40,9 @@ public class TaskDetailFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity(),
                 new ViewModelFactory(getActivity(), AppRepositoryImpl.getInstance(), this)
         ).get(TaskDetailViewModel.class);
-//        viewModel.start(args.taskId)
+        if (getArguments() != null) {
+            viewModel.start(TaskDetailFragmentArgs.fromBundle(getArguments()).getTaskId());
+        }
         viewDataBinding.setLifecycleOwner(this);
         viewDataBinding.setViewmodel(viewModel);
         ViewUtil.setupRefreshLayout(getActivity(), viewDataBinding.refreshLayout, null);

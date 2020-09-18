@@ -36,7 +36,7 @@ public interface TaskDao {
      * @return the task with taskId.
      */
     @Query("SELECT * FROM Tasks WHERE id = :taskId")
-    Flowable<Task> observeTaskById(String taskId);
+    Flowable<Task> observeTaskById(long taskId);
 
     /**
      * Select all tasks from the tasks table.
@@ -53,7 +53,7 @@ public interface TaskDao {
      * @return the task with taskId.
      */
     @Query("SELECT * FROM Tasks WHERE id = :taskId")
-    Single<Task> getTaskById(String taskId);
+    Single<Task> getTaskById(long taskId);
 
     /**
      * Insert a task in the database. If the task already exists, replace it.

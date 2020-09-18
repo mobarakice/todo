@@ -15,11 +15,11 @@ import io.reactivex.Single;
 public interface DbRepository {
     Flowable<List<Task>> observeTasks();
 
-    Flowable<Task> observeTaskById(String taskId);
+    Flowable<Task> observeTaskById(long taskId);
 
     Single<List<Task>> getTasks();
 
-    Single<Task> getTaskById(String taskId);
+    Single<Task> getTaskById(long taskId);
 
     Completable insertTask(Task task);
 

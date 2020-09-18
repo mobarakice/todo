@@ -45,6 +45,7 @@ public class AddEditTaskFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        assert getArguments() != null;
         args = AddEditTaskFragmentArgs.fromBundle(getArguments());
         setupNavigation();
         ViewUtil.setupRefreshLayout(requireActivity(), viewDataBinding.refreshLayout, null);
@@ -53,12 +54,13 @@ public class AddEditTaskFragment extends Fragment {
 
 
     private void setupNavigation() {
-        viewModel.taskUpdatedEvent.observe(getActivity(), status -> {
-            if (status) {
-                NavDirections action = AddEditTaskFragmentDirections
-                        .actionAddEditTaskFragmentToTasksFragment();
-                NavHostFragment.findNavController(this).navigate(action);
-            }
-        });
+        if (getActivity() != null)
+            viewModel.taskUpdatedEvent.observe(getActivity(), status -> {
+                if (status) {
+                    NavDirections action = AddEditTaskFragmentDirections
+                            .actionAddEditTaskFragmentToTasksFragment();
+                    NavHostFragment.findNavController(this).navigate(action);
+                }
+            });
     }
 }

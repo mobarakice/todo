@@ -41,7 +41,7 @@ public class DbRepositoryImpl implements DbRepository {
     }
 
     @Override
-    public Flowable<Task> observeTaskById(String taskId) {
+    public Flowable<Task> observeTaskById(long taskId) {
         return db.taskDao().observeTaskById(taskId);
     }
 
@@ -51,7 +51,7 @@ public class DbRepositoryImpl implements DbRepository {
     }
 
     @Override
-    public Single<Task> getTaskById(String taskId) {
+    public Single<Task> getTaskById(long taskId) {
         return db.taskDao().getTaskById(taskId);
     }
 

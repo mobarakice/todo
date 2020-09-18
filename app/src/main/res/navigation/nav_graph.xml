@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (C) 2019 The Android Open Source Project
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,16 +39,12 @@
         android:label="@string/statistics">
         <action
             android:id="@+id/action_statisticsFragment_to_tasksFragment"
-            app:destination="@id/tasks_fragment_dest"
-            />
+            app:destination="@id/tasks_fragment_dest" />
     </fragment>
     <fragment
         android:id="@+id/tasks_fragment_dest"
         android:name="com.mobarak.todo.ui.tasks.TasksFragment"
         android:label="@string/task_list">
-        <action
-            android:id="@+id/action_tasksFragment_to_statisticsFragment"
-            app:destination="@id/statistics_fragment_dest" />
         <action
             android:id="@+id/action_tasksFragment_to_taskDetailFragment"
             app:destination="@id/task_detail_fragment_dest" />
@@ -58,8 +53,8 @@
             app:destination="@id/add_edit_task_fragment_dest" />
         <argument
             android:name="userMessage"
-            app:argType="integer"
-            android:defaultValue="0" />
+            android:defaultValue="0"
+            app:argType="integer" />
     </fragment>
     <fragment
         android:id="@+id/add_edit_task_fragment_dest"
@@ -67,15 +62,14 @@
         android:label="{title}">
         <argument
             android:name="taskId"
-            app:argType="long"/>
+            app:argType="long" />
         <argument
             android:name="title"
             app:argType="string"
             app:nullable="false" />
         <action
             android:id="@+id/action_addEditTaskFragment_to_tasksFragment"
-            app:destination="@id/tasks_fragment_dest"
-            />
+            app:destination="@id/tasks_fragment_dest" />
     </fragment>
     <argument
         android:name="userMessage"
