@@ -1,6 +1,7 @@
 package com.mobarak.todo.utility;
 
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -13,7 +14,10 @@ public class ViewUtil {
 
 
     public static void showSnackbar(View view, String snackbarText) {
-        Snackbar.make(view, snackbarText, Snackbar.LENGTH_LONG).show();
+        Snackbar snackbar = Snackbar.make(view, snackbarText, Snackbar.LENGTH_LONG);
+        View snackbarView = snackbar.getView();
+        snackbarView.setBackgroundColor(ContextCompat.getColor(view.getContext(),R.color.colorAccent));
+        snackbar.show();
     }
 
 

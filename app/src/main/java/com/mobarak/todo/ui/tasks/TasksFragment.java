@@ -49,12 +49,21 @@ public class TasksFragment extends Fragment {
         ViewUtil.setupRefreshLayout(getActivity(), viewDataBinding.refreshLayout, null);
         setupFab();
         setupListAdapter();
+        setupSnackbar();
 
+    }
+
+    private void setupSnackbar() {
+        if (getActivity() != null)
+            viewModel.getSnackbarText().observe(getActivity(), message -> {
+                ViewUtil.showSnackbar(viewDataBinding.getRoot(), message);
+            });
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        viewModel.setFiltering(FilterType.ALL_TASKS);
         viewModel.loadTasks();
     }
 

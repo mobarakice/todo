@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.StringRes;
 import androidx.lifecycle.MutableLiveData;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
@@ -26,28 +27,32 @@ public class TasksViewModel extends BaseViewModel {
 
     public TasksViewModel(Context context, AppRepository repository) {
         super(context, repository);
-        setFiltering(FilterType.ALL_TASKS);
     }
 
-    private MutableLiveData<Boolean> _forceUpdate = new MutableLiveData<Boolean>(false);
 
-    public MutableLiveData<List<Task>> items = new MutableLiveData<>();
-    private MutableLiveData<List<Task>> _items = new MutableLiveData<>();
+    public MutableLiveData<List<Task>> filteredTasks = new MutableLiveData<>();
+    private MutableLiveData<List<Task>> tasks = new MutableLiveData<>();
 
     public MutableLiveData<Boolean> dataLoading = new MutableLiveData<Boolean>();
-    public MutableLiveData<Boolean> empty = new MutableLiveData<Boolean>();
+    public MutableLiveData<Boolean> empty = new MutableLiveData<>();
 
-    public MutableLiveData<String> currentFilteringLabel = new MutableLiveData<>();
-    public MutableLiveData<String> noTasksLabel = new MutableLiveData<>();
+    public MutableLiveData<Integer> currentFilteringLabel = new MutableLiveData<>();
+    public MutableLiveData<Integer> noTasksLabel = new MutableLiveData<>();
 
     public MutableLiveData<Integer> noTaskIconRes = new MutableLiveData<>();
 
-    private MutableLiveData<Boolean> _tasksAddViewVisible = new MutableLiveData<Boolean>();
+    private MutableLiveData<String> snackbarText = new MutableLiveData<String>();
 
-    public MutableLiveData<String> _snackbarText = new MutableLiveData<String>();
+    public MutableLiveData<String> getSnackbarText() {
+        return snackbarText;
+    }
+
+    public void setSnackbarText(String message) {
+        snackbarText.setValue(message);
+    }
 
     public void empty() {
-        empty.setValue(items.getValue() != null && items.getValue().size() <= 0);
+        empty.setValue(tasks.getValue() == null || tasks.getValue().size() <= 0);
     }
 
 
@@ -58,44 +63,42 @@ public class TasksViewModel extends BaseViewModel {
      *                    [TasksFilterType.COMPLETED_TASKS], or
      *                    [TasksFilterType.ACTIVE_TASKS]
      */
-    private void setFiltering(FilterType requestType) {
+    public void setFiltering(FilterType requestType) {
 //        savedStateHandle.set(TASKS_FILTER_SAVED_STATE_KEY, requestType)
 
         // Depending on the filter type, set the filtering label, icon drawables, etc.
         switch (requestType) {
             case ALL_TASKS:
                 setFilter(
-                        context.getString(R.string.label_all), context.getString(R.string.no_tasks_all),
-                        R.drawable.logo_no_fill, true
+                        R.string.label_all, R.string.no_tasks_all,
+                        R.drawable.logo_no_fill
                 );
                 break;
             case ACTIVE_TASKS:
                 setFilter(
-                        context.getString(R.string.label_active), context.getString(R.string.no_tasks_active),
-                        R.drawable.ic_check_circle_96dp, false
+                        R.string.label_active, R.string.no_tasks_active,
+                        R.drawable.ic_check_circle_96dp
                 );
                 break;
             case COMPLETED_TASKS:
                 setFilter(
-                        context.getString(R.string.label_completed), context.getString(R.string.no_tasks_completed),
-                        R.drawable.ic_verified_user_96dp, false
+                        R.string.label_completed, R.string.no_tasks_completed,
+                        R.drawable.ic_verified_user_96dp
                 );
                 break;
         }
         // Refresh list
-        loadTasks();
+        empty();
     }
 
     private void setFilter(
-            String filteringLabelString,
-            String noTasksLabelString,
-            @DrawableRes int noTaskIconDrawable,
-            boolean tasksAddVisible
+            @StringRes int filteringLabelString,
+            @StringRes int noTasksLabelString,
+            @DrawableRes int noTaskIconDrawable
     ) {
         currentFilteringLabel.setValue(filteringLabelString);
         noTasksLabel.setValue(noTasksLabelString);
         noTaskIconRes.setValue(noTaskIconDrawable);
-        _tasksAddViewVisible.setValue(tasksAddVisible);
     }
 
 
@@ -108,15 +111,10 @@ public class TasksViewModel extends BaseViewModel {
                         throwable -> Log.e(TAG, "no task found", throwable)));
 
         if (completed) {
-            showSnackbarMessage(context.getString(R.string.task_marked_complete));
+            setSnackbarText(context.getString(R.string.task_marked_complete));
         } else {
-            //tasksRepository.activateTask(task)
-            showSnackbarMessage(context.getString(R.string.task_marked_active));
+            setSnackbarText(context.getString(R.string.task_marked_active));
         }
-    }
-
-    private void showSnackbarMessage(String message) {
-        _snackbarText.setValue(message);
     }
 
 
@@ -125,7 +123,7 @@ public class TasksViewModel extends BaseViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(tasks -> {
-                            _items.setValue(tasks);
+                            this.tasks.setValue(tasks);
                             filterItems(FilterType.ALL_TASKS);
                         },
                         throwable -> {
@@ -136,19 +134,20 @@ public class TasksViewModel extends BaseViewModel {
 
     public void filterItems(FilterType filterType) {
         List<Task> filterTask = new ArrayList<>();
+        setFiltering(filterType);
         switch (filterType) {
             case ALL_TASKS:
-                filterTask.addAll(_items.getValue());
+                filterTask.addAll(tasks.getValue());
                 break;
             case ACTIVE_TASKS:
-                for (Task task : _items.getValue()) {
+                for (Task task : tasks.getValue()) {
                     if (!task.isCompleted()) {
                         filterTask.add(task);
                     }
                 }
                 break;
             case COMPLETED_TASKS:
-                for (Task task : _items.getValue()) {
+                for (Task task : tasks.getValue()) {
                     if (task.isCompleted()) {
                         filterTask.add(task);
                     }
@@ -156,7 +155,7 @@ public class TasksViewModel extends BaseViewModel {
                 break;
         }
 
-        items.setValue(filterTask);
+        filteredTasks.setValue(filterTask);
 
     }
 
@@ -167,7 +166,6 @@ public class TasksViewModel extends BaseViewModel {
     }
 
     public void refresh() {
-        _forceUpdate.setValue(true);
     }
 
 }

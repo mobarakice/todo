@@ -47,8 +47,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clickable="true"
-                android:orientation="vertical"
-                android:focusable="true">
+                android:focusable="true"
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:id="@+id/tasks_linear_layout"
@@ -66,15 +66,15 @@
                         android:layout_marginRight="@dimen/list_item_padding"
                         android:layout_marginBottom="@dimen/activity_vertical_margin"
                         android:gravity="center_vertical"
-                        android:text="@{viewmodel.currentFilteringLabel}"
+                        android:text="@{context.getString(viewmodel.currentFilteringLabel.intValue())}"
                         android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/tasks_list"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        app:items="@{viewmodel.items}" />
+                        app:items="@{viewmodel.filteredTasks}"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -90,8 +90,8 @@
                         android:layout_width="96dp"
                         android:layout_height="96dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/logo_no_fill"
-                        android:contentDescription="@string/no_tasks_image_content_description" />
+                        android:contentDescription="@string/no_tasks_image_content_description"
+                        android:src="@{ContextCompat.getDrawable(context, viewmodel.noTaskIconRes.intValue())}" />
 
                     <TextView
                         android:id="@+id/no_tasks_text"
@@ -99,7 +99,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginBottom="@dimen/list_item_padding"
-                        android:text="@{viewmodel.noTasksLabel}" />
+                        android:text="@{context.getString(viewmodel.noTasksLabel.intValue())}" />
                 </LinearLayout>
             </RelativeLayout>
 
