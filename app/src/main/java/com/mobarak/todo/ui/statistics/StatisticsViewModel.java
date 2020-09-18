@@ -25,9 +25,9 @@ public class StatisticsViewModel extends BaseViewModel {
 
     private MutableLiveData<List<Task>> tasks = new MutableLiveData<>(); /*tasksRepository.observeTasks()*/
     private MutableLiveData<StatsResult> stats = new MutableLiveData<>();
+    public MutableLiveData<Float> activeTasksPercent = new MutableLiveData<>(0f);
+    public MutableLiveData<Float> completedTasksPercent = new MutableLiveData<>(0f);
 
-    public float activeTasksPercent = 0f;
-    public float completedTasksPercent = 0f;
 
     public MutableLiveData<Boolean> dataLoading = new MutableLiveData<Boolean>(false);
 
@@ -36,15 +36,16 @@ public class StatisticsViewModel extends BaseViewModel {
     }
 
     public void refresh() {
-        dataLoading.setValue(false);
+        dataLoading.setValue(true);
         mDisposable.add(repository.getDbRepository().observeTasks()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(items -> {
                             tasks.setValue(items);
                             stats.setValue(StatisticsUtils.getActiveAndCompletedStats(tasks.getValue()));
-                            activeTasksPercent = stats.getValue().activeTasksPercent;
-                            completedTasksPercent = stats.getValue().completedTasksPercent;
+                            dataLoading.setValue(false);
+                            activeTasksPercent.setValue(stats.getValue().activeTasksPercent);
+                            completedTasksPercent.setValue(stats.getValue().completedTasksPercent);
                             empty();
                         },
                         throwable -> {
