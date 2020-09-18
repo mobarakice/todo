@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.mobarak.todo.R;
 import com.mobarak.todo.ui.addedittask.AddEditTaskFragmentArgs;
@@ -46,7 +47,16 @@ public class TaskDetailFragment extends Fragment {
         viewDataBinding.setLifecycleOwner(this);
         viewDataBinding.setViewmodel(viewModel);
         ViewUtil.setupRefreshLayout(getActivity(), viewDataBinding.refreshLayout, null);
+        setupSnackbar();
 
+    }
+
+    private void setupSnackbar() {
+        if (getActivity() != null)
+            viewModel.snackbarText.observe(getActivity(), message -> {
+                ViewUtil.showSnackbar(viewDataBinding.getRoot(), message);
+                NavHostFragment.findNavController(this).popBackStack();
+            });
     }
 
     @Override
@@ -55,14 +65,12 @@ public class TaskDetailFragment extends Fragment {
     }
 
     @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.menu_delete) {
             viewModel.deleteTask();
             return true;
         }
-
-        return super.onContextItemSelected(item);
+        return super.onOptionsItemSelected(item);
     }
 
 }

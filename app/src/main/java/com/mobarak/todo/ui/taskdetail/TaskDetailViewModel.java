@@ -40,6 +40,16 @@ public class TaskDetailViewModel extends BaseViewModel {
 
 
     public void deleteTask() {
+        if (_taskId.getValue() != null)
+            mDisposable.add(repository.getDbRepository().deleteTaskById(_taskId.getValue())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(() -> {
+                                snackbarText.setValue(context.getString(R.string.menu_delete_task));
+                            },
+                            throwable -> {
+                                Log.e(TAG, "Task deleted", throwable);
+                            }));
     }
 
     public void editTask(View view) {
