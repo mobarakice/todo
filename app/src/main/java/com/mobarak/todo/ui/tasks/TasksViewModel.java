@@ -33,7 +33,7 @@ public class TasksViewModel extends BaseViewModel {
     public MutableLiveData<List<Task>> filteredTasks = new MutableLiveData<>();
     private MutableLiveData<List<Task>> tasks = new MutableLiveData<>();
 
-    public MutableLiveData<Boolean> dataLoading = new MutableLiveData<Boolean>();
+    public MutableLiveData<Boolean> dataLoading = new MutableLiveData<>();
     public MutableLiveData<Boolean> empty = new MutableLiveData<>();
 
     public MutableLiveData<Integer> currentFilteringLabel = new MutableLiveData<>();
@@ -41,7 +41,7 @@ public class TasksViewModel extends BaseViewModel {
 
     public MutableLiveData<Integer> noTaskIconRes = new MutableLiveData<>();
 
-    private MutableLiveData<String> snackbarText = new MutableLiveData<String>();
+    private MutableLiveData<String> snackbarText = new MutableLiveData<>();
 
     public MutableLiveData<String> getSnackbarText() {
         return snackbarText;
@@ -134,24 +134,26 @@ public class TasksViewModel extends BaseViewModel {
     public void filterItems(FilterType filterType) {
         List<Task> filterTask = new ArrayList<>();
         setFiltering(filterType);
-        switch (filterType) {
-            case ALL_TASKS:
-                filterTask.addAll(tasks.getValue());
-                break;
-            case ACTIVE_TASKS:
-                for (Task task : tasks.getValue()) {
-                    if (!task.isCompleted()) {
-                        filterTask.add(task);
+        if (tasks.getValue() != null) {
+            switch (filterType) {
+                case ALL_TASKS:
+                    filterTask.addAll(tasks.getValue());
+                    break;
+                case ACTIVE_TASKS:
+                    for (Task task : tasks.getValue()) {
+                        if (!task.isCompleted()) {
+                            filterTask.add(task);
+                        }
                     }
-                }
-                break;
-            case COMPLETED_TASKS:
-                for (Task task : tasks.getValue()) {
-                    if (task.isCompleted()) {
-                        filterTask.add(task);
+                    break;
+                case COMPLETED_TASKS:
+                    for (Task task : tasks.getValue()) {
+                        if (task.isCompleted()) {
+                            filterTask.add(task);
+                        }
                     }
-                }
-                break;
+                    break;
+            }
         }
 
         filteredTasks.setValue(filterTask);

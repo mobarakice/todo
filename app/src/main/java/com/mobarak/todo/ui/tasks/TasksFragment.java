@@ -27,7 +27,6 @@ public class TasksFragment extends Fragment {
 
     private TasksViewModel viewModel;
     private TasksFragBinding viewDataBinding;
-    private TasksAdapter listAdapter;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -43,7 +42,6 @@ public class TasksFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity(),
                 new ViewModelFactory(getActivity(), AppRepositoryImpl.getInstance(), this)
         ).get(TasksViewModel.class);
-//        viewModel.start(args.taskId)
         viewDataBinding.setLifecycleOwner(this);
         viewDataBinding.setViewmodel(viewModel);
         ViewUtil.setupRefreshLayout(getActivity(), viewDataBinding.refreshLayout, null);
@@ -121,15 +119,9 @@ public class TasksFragment extends Fragment {
     }
 
 
-    private void openTaskDetails(View view, long taskId) {
-        NavDirections action = TasksFragmentDirections
-                .actionTasksFragmentToTaskDetailFragment(taskId);
-        Navigation.findNavController(view).navigate(action);
-    }
-
     private void setupListAdapter() {
         if (viewModel != null) {
-            listAdapter = new TasksAdapter(viewModel);
+            TasksAdapter listAdapter = new TasksAdapter(viewModel);
             viewDataBinding.tasksList.setAdapter(listAdapter);
         } else {
             Log.i("", "ViewModel not initialized when attempting to set up adapter.");
