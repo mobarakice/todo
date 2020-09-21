@@ -3,13 +3,14 @@ package com.mobarak.todo.ui.addedittask;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.mobarak.todo.R;
 import com.mobarak.todo.data.AppRepository;
 import com.mobarak.todo.data.db.entity.Task;
 import com.mobarak.todo.ui.base.BaseViewModel;
+import com.mobarak.todo.utility.Event;
 import com.mobarak.todo.utility.Utility;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -27,18 +28,26 @@ public class AddEditTaskViewModel extends BaseViewModel {
     public MutableLiveData<String> description = new MutableLiveData<String>();
     public MutableLiveData<Boolean> dataLoading = new MutableLiveData<Boolean>(false);
 
-    private MutableLiveData<String> snackbarText = new MutableLiveData<String>();
 
-    public MutableLiveData<String> getSnackbarText() {
+    private MutableLiveData<Event<String>> snackbarText = new MutableLiveData<>();
+
+    private MutableLiveData<Event<Boolean>> taskUpdatedEvent = new MutableLiveData<>();
+
+    public MutableLiveData<Event<String>> getSnackbarText() {
         return snackbarText;
     }
 
-    public void setSnackbarText(String message) {
-        snackbarText.setValue(message);
+    private void setSnackbarText(String text) {
+        this.snackbarText.setValue(new Event<>(text));
     }
 
-    public MutableLiveData<Boolean> taskUpdatedEvent = new MutableLiveData<>(false);
+    public MutableLiveData<Event<Boolean>> getTaskUpdatedEvent() {
+        return taskUpdatedEvent;
+    }
 
+    public void setTaskUpdatedEvent(boolean update) {
+        this.taskUpdatedEvent.setValue(new Event<>(update));
+    }
 
     private Long taskId = null;
 
@@ -118,7 +127,7 @@ public class AddEditTaskViewModel extends BaseViewModel {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(() -> {
                             setSnackbarText(context.getString(R.string.successfully_added_task_message));
-                            taskUpdatedEvent.setValue(true);
+                            setTaskUpdatedEvent(true);
                         },
                         throwable -> Log.e(TAG, "new task adding failed", throwable)));
     }
@@ -131,8 +140,8 @@ public class AddEditTaskViewModel extends BaseViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(() -> {
-                            setSnackbarText(context.getString(R.string.successfully_added_task_message));
-                            taskUpdatedEvent.setValue(true);
+                            setSnackbarText(context.getString(R.string.successfully_updated_task_message));
+                            setTaskUpdatedEvent(true);
                         },
                         throwable -> Log.e(TAG, "task updating failed", throwable)));
     }

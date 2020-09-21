@@ -39,8 +39,8 @@ public class TasksFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity(),
-                new ViewModelFactory(getActivity(), AppRepositoryImpl.getInstance(), this)
+        viewModel = new ViewModelProvider(this,
+                new ViewModelFactory(getContext(), AppRepositoryImpl.getInstance(), this)
         ).get(TasksViewModel.class);
         viewDataBinding.setLifecycleOwner(this);
         viewDataBinding.setViewmodel(viewModel);

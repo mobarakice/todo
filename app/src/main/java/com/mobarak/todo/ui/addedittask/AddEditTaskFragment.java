@@ -9,17 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
 
 import com.mobarak.todo.R;
-import com.mobarak.todo.ui.base.ViewModelFactory;
 import com.mobarak.todo.data.AppRepositoryImpl;
 import com.mobarak.todo.databinding.AddtaskFragBinding;
-import com.mobarak.todo.ui.tasks.TasksFragmentDirections;
-import com.mobarak.todo.utility.Utility;
+import com.mobarak.todo.ui.base.ViewModelFactory;
+import com.mobarak.todo.utility.EventObserver;
 import com.mobarak.todo.utility.ViewUtil;
 
 public class AddEditTaskFragment extends Fragment {
@@ -34,8 +30,8 @@ public class AddEditTaskFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.addtask_frag, container, false);
         viewDataBinding = AddtaskFragBinding.bind(root);
-        viewModel = new ViewModelProvider(requireActivity(),
-                new ViewModelFactory(getActivity(), AppRepositoryImpl.getInstance(), this)
+        viewModel = new ViewModelProvider(this,
+                new ViewModelFactory(getContext(), AppRepositoryImpl.getInstance(), this)
         ).get(AddEditTaskViewModel.class);
         viewDataBinding.setLifecycleOwner(this);
         viewDataBinding.setViewmodel(viewModel);
@@ -55,20 +51,14 @@ public class AddEditTaskFragment extends Fragment {
 
 
     private void setupSnackbar() {
-        if (getActivity() != null)
-            viewModel.getSnackbarText().observe(getActivity(), message -> {
-                ViewUtil.showSnackbar(viewDataBinding.getRoot(), message);
-            });
+        viewModel.getSnackbarText().observe(getViewLifecycleOwner(), new EventObserver<>(event -> {
+            ViewUtil.showSnackbar(viewDataBinding.getRoot(), (String) event.peekContent());
+        }));
     }
 
     private void setupNavigation() {
-        if (getActivity() != null)
-            viewModel.taskUpdatedEvent.observe(getActivity(), status -> {
-                if (status) {
-                    NavDirections action = AddEditTaskFragmentDirections
-                            .actionAddEditTaskFragmentToTasksFragment();
-                    NavHostFragment.findNavController(this).navigate(action);
-                }
-            });
+        viewModel.getTaskUpdatedEvent().observe(getViewLifecycleOwner(), new EventObserver<>((event) -> {
+            NavHostFragment.findNavController(this).popBackStack();
+        }));
     }
 }
