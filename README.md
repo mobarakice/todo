@@ -7,7 +7,7 @@ The Sample TODO app has been developed for demonstrating the MVVM (Model View Vi
 
 ## App architecture blueprint
 We are using MVVM design patterns and to flow best practices. The chart below will show architecture details.
-![app_architecure_diagram](/home/mobarak/Pictures/app_architecure_diagram.jpg)
+![app_architecure_diagram](/blob/master/app_architecure_diagram.jpg)
 
 ## Project structure with app process flow (based on the packaging)
 The app has following packages:
