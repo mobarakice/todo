@@ -1,22 +1,15 @@
-package com.mobarak.todo.utility;
+package com.mobarak.todo.utility
 
-import androidx.lifecycle.Observer;
+import androidx.lifecycle.Observer
 
-public class EventObserver<T> implements Observer<Event<T>> {
-    private EventUnhandledContent unhandledContent;
-
-    public EventObserver(EventUnhandledContent unhandledContent) {
-        this.unhandledContent = unhandledContent;
+class EventObserver<T>(private val unhandledContent: EventUnhandledContent) : Observer<Event<T?>?> {
+    interface EventUnhandledContent {
+        fun onEventUnhandledContent(event: Event<*>?)
     }
 
-    public interface EventUnhandledContent {
-        void onEventUnhandledContent(Event event);
-    }
-
-    @Override
-    public void onChanged(Event<T> event) {
-        if (event != null && event.getContentIfNotHandled() != null) {
-            unhandledContent.onEventUnhandledContent(event);
+    override fun onChanged(event: Event<T?>?) {
+        if (event != null && event.contentIfNotHandled != null) {
+            unhandledContent.onEventUnhandledContent(event)
         }
     }
 }

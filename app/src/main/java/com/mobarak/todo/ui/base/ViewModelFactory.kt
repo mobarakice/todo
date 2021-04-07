@@ -1,53 +1,36 @@
-package com.mobarak.todo.ui.base;
+package com.mobarak.todo.ui.base
 
-import android.content.Context;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.lifecycle.AbstractSavedStateViewModelFactory;
-import androidx.lifecycle.SavedStateHandle;
-import androidx.lifecycle.ViewModel;
-import androidx.savedstate.SavedStateRegistryOwner;
-
-import com.mobarak.todo.data.AppRepository;
-import com.mobarak.todo.ui.addedittask.AddEditTaskViewModel;
-import com.mobarak.todo.ui.statistics.StatisticsViewModel;
-import com.mobarak.todo.ui.taskdetail.TaskDetailViewModel;
-import com.mobarak.todo.ui.tasks.TasksViewModel;
+import android.content.Context
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.savedstate.SavedStateRegistryOwner
+import com.mobarak.todo.data.AppRepository
+import com.mobarak.todo.ui.addedittask.AddEditTaskViewModel
+import com.mobarak.todo.ui.statistics.StatisticsViewModel
+import com.mobarak.todo.ui.taskdetail.TaskDetailViewModel
+import com.mobarak.todo.ui.tasks.TasksViewModel
 
 /**
  * This view model factory class, all viewmodel will be instantiated via this class
  *
  * @author mobarak
  */
-public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
-
-    private AppRepository repository;
-    private Context context;
-
-    public ViewModelFactory(Context context, AppRepository repository, @NonNull SavedStateRegistryOwner owner) {
-        super(owner, null);
-        this.context = context;
-        this.repository = repository;
-    }
-
-    @NonNull
-    @Override
-    protected <T extends ViewModel> T create(@NonNull String key, @NonNull Class<T> modelClass, @NonNull SavedStateHandle handle) {
-        if (modelClass.equals(TasksViewModel.class)) {
-            return (T) new TasksViewModel(context, repository);
+class ViewModelFactory(private val context: Context?, private val repository: AppRepository?, owner: SavedStateRegistryOwner) : AbstractSavedStateViewModelFactory(owner, null) {
+    override fun <T : ViewModel?> create(key: String, modelClass: Class<T>, handle: SavedStateHandle): T {
+        if (modelClass == TasksViewModel::class.java) {
+            return TasksViewModel(context, repository) as T
         }
-        if (modelClass.equals(StatisticsViewModel.class)) {
-            return (T) new StatisticsViewModel(context, repository);
+        if (modelClass == StatisticsViewModel::class.java) {
+            return StatisticsViewModel(context, repository) as T
         }
-        if (modelClass.equals(AddEditTaskViewModel.class)) {
-            return (T) new AddEditTaskViewModel(context, repository);
+        if (modelClass == AddEditTaskViewModel::class.java) {
+            return AddEditTaskViewModel(context, repository) as T
         }
-        if (modelClass.equals(TaskDetailViewModel.class)) {
-            return (T) new TaskDetailViewModel(context, repository);
+        return if (modelClass == TaskDetailViewModel::class.java) {
+            TaskDetailViewModel(context, repository) as T
         } else {
-            throw new IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}");
+            throw IllegalArgumentException("Unknown ViewModel class: \${modelClass.name}")
         }
     }
 }

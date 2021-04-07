@@ -1,35 +1,30 @@
-package com.mobarak.todo.ui.tasks;
+package com.mobarak.todo.ui.tasks
 
-import android.graphics.Paint;
-import android.widget.TextView;
+import android.graphics.Paint
+import android.widget.TextView
+import androidx.databinding.BindingAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.mobarak.todo.data.db.entity.Task
 
-import androidx.databinding.BindingAdapter;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.mobarak.todo.data.db.entity.Task;
-
-import java.util.List;
-
-public class TasksListBinding {
-
+object TasksListBinding {
     /**
      * [BindingAdapter]s for the [Task]s list.
      */
     @BindingAdapter("app:items")
-    public static void setItems(RecyclerView listView, List<Task> items) {
+    fun setItems(listView: RecyclerView, items: List<Task?>?) {
         if (items != null) {
-            if (listView.getAdapter() instanceof TasksAdapter) {
-                ((TasksAdapter) listView.getAdapter()).submitList(items);
+            if (listView.adapter is TasksAdapter) {
+                (listView.adapter as TasksAdapter?)!!.submitList(items)
             }
         }
     }
 
     @BindingAdapter("app:completedTask")
-    public static void setStyle(TextView textView, boolean enabled) {
+    fun setStyle(textView: TextView, enabled: Boolean) {
         if (enabled) {
-            textView.setPaintFlags(textView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            textView.paintFlags = textView.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
         } else {
-            textView.setPaintFlags(textView.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+            textView.paintFlags = textView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
         }
     }
 }

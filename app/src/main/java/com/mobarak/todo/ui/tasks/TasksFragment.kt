@@ -1,131 +1,112 @@
-package com.mobarak.todo.ui.tasks;
+package com.mobarak.todo.ui.tasks
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.os.Bundle
+import android.util.Log
+import android.view.*
+import androidx.appcompat.widget.PopupMenu
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavDirections
+import androidx.navigation.Navigation
+import com.mobarak.todo.R
+import com.mobarak.todo.data.AppRepositoryImpl
+import com.mobarak.todo.databinding.TasksFragBinding
+import com.mobarak.todo.ui.base.ViewModelFactory
+import com.mobarak.todo.utility.ViewUtil
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
-
-import com.mobarak.todo.R;
-import com.mobarak.todo.data.AppRepositoryImpl;
-import com.mobarak.todo.databinding.TasksFragBinding;
-import com.mobarak.todo.ui.base.ViewModelFactory;
-import com.mobarak.todo.utility.ViewUtil;
-
-public class TasksFragment extends Fragment {
-
-    private TasksViewModel viewModel;
-    private TasksFragBinding viewDataBinding;
-
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.tasks_frag, container, false);
-        viewDataBinding = TasksFragBinding.bind(root);
-        setHasOptionsMenu(true);
-        return root;
+class TasksFragment : Fragment() {
+    private var viewModel: TasksViewModel? = null
+    private var viewDataBinding: TasksFragBinding? = null
+    override fun onCreateView(inflater: LayoutInflater,
+                              container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val root = inflater.inflate(R.layout.tasks_frag, container, false)
+        viewDataBinding = TasksFragBinding.bind(root)
+        setHasOptionsMenu(true)
+        return root
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        viewModel = new ViewModelProvider(this,
-                new ViewModelFactory(getContext(), AppRepositoryImpl.getInstance(), this)
-        ).get(TasksViewModel.class);
-        viewDataBinding.setLifecycleOwner(this);
-        viewDataBinding.setViewmodel(viewModel);
-        ViewUtil.setupRefreshLayout(getActivity(), viewDataBinding.refreshLayout, null);
-        setupFab();
-        setupListAdapter();
-        setupSnackbar();
-
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        viewModel = ViewModelProvider(this,
+                ViewModelFactory(context, AppRepositoryImpl.Companion.getInstance(), this)
+        ).get(TasksViewModel::class.java)
+        viewDataBinding!!.lifecycleOwner = this
+        viewDataBinding!!.viewmodel = viewModel
+        ViewUtil.setupRefreshLayout(activity, viewDataBinding!!.refreshLayout, null)
+        setupFab()
+        setupListAdapter()
+        setupSnackbar()
     }
 
-    private void setupSnackbar() {
-        if (getActivity() != null)
-            viewModel.getSnackbarText().observe(getActivity(), message -> {
-                ViewUtil.showSnackbar(viewDataBinding.getRoot(), message);
-            });
+    private fun setupSnackbar() {
+        if (activity != null) viewModel.getSnackbarText().observe(activity, Observer { message: String? -> ViewUtil.showSnackbar(viewDataBinding!!.root, message) })
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        viewModel.setFiltering(FilterType.ALL_TASKS);
-        viewModel.loadTasks();
+    override fun onStart() {
+        super.onStart()
+        viewModel!!.setFiltering(FilterType.ALL_TASKS)
+        viewModel!!.loadTasks()
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.tasks_fragment_menu, menu);
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.tasks_fragment_menu, menu)
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_clear:
-//                viewModel.clearCompletedTasks();
-                return true;
-
-            case R.id.menu_filter:
-                showFilteringPopUpMenu();
-                return true;
-            case R.id.menu_refresh:
-                viewModel.loadTasks();
-                return true;
-            default:
-                return false;
-        }
-    }
-
-
-    private void showFilteringPopUpMenu() {
-        View view = getActivity().findViewById(R.id.menu_filter);
-        PopupMenu popup = new PopupMenu(getActivity(), view);
-        popup.getMenuInflater().inflate(R.menu.filter_tasks, popup.getMenu());
-        popup.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.active:
-                    viewModel.filterItems(FilterType.ACTIVE_TASKS);
-                    return true;
-                case R.id.completed:
-                    viewModel.filterItems(FilterType.COMPLETED_TASKS);
-                    return true;
-                case R.id.all:
-                    viewModel.filterItems(FilterType.ALL_TASKS);
-                    return true;
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_clear -> //                viewModel.clearCompletedTasks();
+                true
+            R.id.menu_filter -> {
+                showFilteringPopUpMenu()
+                true
             }
-            return false;
-        });
-        popup.show();
-    }
-
-    private void setupFab() {
-        viewDataBinding.getRoot().findViewById(R.id.add_task_fab).setOnClickListener(view -> {
-            NavDirections action = TasksFragmentDirections
-                    .actionTasksFragmentToAddEditTaskFragment(-1, getActivity().getString(R.string.add_task));
-            Navigation.findNavController(view).navigate(action);
-        });
-    }
-
-
-    private void setupListAdapter() {
-        if (viewModel != null) {
-            TasksAdapter listAdapter = new TasksAdapter(viewModel);
-            viewDataBinding.tasksList.setAdapter(listAdapter);
-        } else {
-            Log.i("", "ViewModel not initialized when attempting to set up adapter.");
+            R.id.menu_refresh -> {
+                viewModel!!.loadTasks()
+                true
+            }
+            else -> false
         }
     }
 
+    private fun showFilteringPopUpMenu() {
+        val view = activity!!.findViewById<View>(R.id.menu_filter)
+        val popup = PopupMenu(activity!!, view)
+        popup.menuInflater.inflate(R.menu.filter_tasks, popup.menu)
+        popup.setOnMenuItemClickListener { item: MenuItem ->
+            when (item.itemId) {
+                R.id.active -> {
+                    viewModel!!.filterItems(FilterType.ACTIVE_TASKS)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.completed -> {
+                    viewModel!!.filterItems(FilterType.COMPLETED_TASKS)
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.all -> {
+                    viewModel!!.filterItems(FilterType.ALL_TASKS)
+                    return@setOnMenuItemClickListener true
+                }
+            }
+            false
+        }
+        popup.show()
+    }
+
+    private fun setupFab() {
+        viewDataBinding!!.root.findViewById<View>(R.id.add_task_fab).setOnClickListener { view: View? ->
+            val action: NavDirections = TasksFragmentDirections
+                    .actionTasksFragmentToAddEditTaskFragment(-1, activity!!.getString(R.string.add_task))
+            Navigation.findNavController(view!!).navigate(action)
+        }
+    }
+
+    private fun setupListAdapter() {
+        if (viewModel != null) {
+            val listAdapter = TasksAdapter(viewModel!!)
+            viewDataBinding!!.tasksList.adapter = listAdapter
+        } else {
+            Log.i("", "ViewModel not initialized when attempting to set up adapter.")
+        }
+    }
 }

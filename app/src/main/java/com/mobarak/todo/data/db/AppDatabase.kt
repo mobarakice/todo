@@ -1,36 +1,34 @@
-package com.mobarak.todo.data.db;
+package com.mobarak.todo.data.db
 
-import android.content.Context;
-
-import androidx.room.Database;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
-
-import com.mobarak.todo.data.db.dao.TaskDao;
-import com.mobarak.todo.data.db.entity.Task;
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.mobarak.todo.data.db.dao.TaskDao
+import com.mobarak.todo.data.db.entity.Task
 
 /**
  * The Room database that contains the task table
  * @author mobarak
  */
-@Database(entities = {Task.class}, version = 1)
-public abstract class AppDatabase extends RoomDatabase {
+@Database(entities = [Task::class], version = 1)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun taskDao(): TaskDao
 
-    private static volatile AppDatabase INSTANCE;
-
-    public abstract TaskDao taskDao();
-
-    public static AppDatabase getInstance(Context context) {
-        if (INSTANCE == null) {
-            synchronized (AppDatabase.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                            AppDatabase.class, "todo.db")
-                            .build();
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+        fun getInstance(context: Context): AppDatabase? {
+            if (INSTANCE == null) {
+                synchronized(AppDatabase::class.java) {
+                    if (INSTANCE == null) {
+                        INSTANCE = Room.databaseBuilder(context.applicationContext,
+                                AppDatabase::class.java, "todo.db")
+                                .build()
+                    }
                 }
             }
+            return INSTANCE
         }
-        return INSTANCE;
     }
-
 }

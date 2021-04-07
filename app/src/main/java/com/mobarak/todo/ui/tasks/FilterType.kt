@@ -1,7 +1,6 @@
-package com.mobarak.todo.ui.tasks;
+package com.mobarak.todo.ui.tasks
 
-public enum FilterType {
-
+enum class FilterType {
     /**
      * Do not filter tasks.
      */

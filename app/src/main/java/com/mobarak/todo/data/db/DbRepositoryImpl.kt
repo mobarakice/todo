@@ -1,87 +1,73 @@
-package com.mobarak.todo.data.db;
+package com.mobarak.todo.data.db
 
-import com.mobarak.todo.ui.base.AppApplication;
-import com.mobarak.todo.data.db.entity.Task;
-
-import java.util.List;
-
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Single;
+import com.mobarak.todo.data.db.entity.Task
+import com.mobarak.todo.ui.base.AppApplication
+import io.reactivex.Completable
+import io.reactivex.Flowable
+import io.reactivex.Single
 
 /**
  * This Database repository implementation class, all business logic that related to database will be implemented here
  *
  * @author mobarak
  */
-public class DbRepositoryImpl implements DbRepository {
-
-    private static DbRepositoryImpl mInstance;
-
-    private AppDatabase db;
-
-    private DbRepositoryImpl() {
-        db = AppDatabase.getInstance(AppApplication.getAppContext());
+class DbRepositoryImpl private constructor() : DbRepository {
+    private val db: AppDatabase?
+    override fun observeTasks(): Flowable<List<Task?>?>? {
+        return db!!.taskDao().observeTasks()
     }
 
-    public static DbRepositoryImpl getInstance() {
-        if (mInstance == null) {
-            synchronized (DbRepositoryImpl.class) {
+    override fun observeTaskById(taskId: Long): Flowable<Task?>? {
+        return db!!.taskDao().observeTaskById(taskId)
+    }
+
+    override val tasks: Single<List<Task?>?>?
+        get() = db!!.taskDao().tasks
+
+    override fun getTaskById(taskId: Long): Single<Task?>? {
+        return db!!.taskDao().getTaskById(taskId)
+    }
+
+    override fun insertTask(task: Task?): Completable? {
+        return db!!.taskDao().insertTask(task)
+    }
+
+    override fun updateTask(task: Task?): Completable? {
+        return db!!.taskDao().updateTask(task)
+    }
+
+    override fun updateCompleted(taskId: Long, completed: Boolean): Completable? {
+        return db!!.taskDao().updateCompleted(taskId, completed)
+    }
+
+    override fun deleteTaskById(taskId: Long): Completable? {
+        return db!!.taskDao().deleteTaskById(taskId)
+    }
+
+    override fun deleteTasks(): Completable? {
+        return db!!.taskDao().deleteTasks()
+    }
+
+    override fun deleteCompletedTasks(): Completable? {
+        return db!!.taskDao().deleteCompletedTasks()
+    }
+
+    companion object {
+        private var mInstance: DbRepositoryImpl? = null
+        val instance: DbRepositoryImpl?
+            get() {
                 if (mInstance == null) {
-                    mInstance = new DbRepositoryImpl();
+                    synchronized(DbRepositoryImpl::class.java) {
+                        if (mInstance == null) {
+                            mInstance = DbRepositoryImpl()
+                        }
+                    }
                 }
+                return mInstance
             }
-        }
-        return mInstance;
     }
 
-    @Override
-    public Flowable<List<Task>> observeTasks() {
-        return db.taskDao().observeTasks();
-    }
-
-    @Override
-    public Flowable<Task> observeTaskById(long taskId) {
-        return db.taskDao().observeTaskById(taskId);
-    }
-
-    @Override
-    public Single<List<Task>> getTasks() {
-        return db.taskDao().getTasks();
-    }
-
-    @Override
-    public Single<Task> getTaskById(long taskId) {
-        return db.taskDao().getTaskById(taskId);
-    }
-
-    @Override
-    public Completable insertTask(Task task) {
-        return db.taskDao().insertTask(task);
-    }
-
-    @Override
-    public Completable updateTask(Task task) {
-        return db.taskDao().updateTask(task);
-    }
-
-    @Override
-    public Completable updateCompleted(long taskId, boolean completed) {
-        return db.taskDao().updateCompleted(taskId, completed);
-    }
-
-    @Override
-    public Completable deleteTaskById(long taskId) {
-        return db.taskDao().deleteTaskById(taskId);
-    }
-
-    @Override
-    public Completable deleteTasks() {
-        return db.taskDao().deleteTasks();
-    }
-
-    @Override
-    public Completable deleteCompletedTasks() {
-        return db.taskDao().deleteCompletedTasks();
+    init {
+        db = AppDatabase.Companion.getInstance(AppApplication.Companion.getAppContext())
     }
 }

@@ -1,24 +1,21 @@
-package com.mobarak.todo.ui.statistics;
+package com.mobarak.todo.ui.statistics
 
-import com.mobarak.todo.data.db.entity.Task;
+import com.mobarak.todo.data.db.entity.Task
 
-import java.util.List;
-
-public class StatisticsUtils {
-    public static StatsResult getActiveAndCompletedStats(List<Task> tasks) {
-
-        if (tasks == null || tasks.isEmpty()) {
-            return new StatsResult(0f, 0f);
+object StatisticsUtils {
+    fun getActiveAndCompletedStats(tasks: List<Task?>?): StatsResult {
+        return if (tasks == null || tasks.isEmpty()) {
+            StatsResult(0f, 0f)
         } else {
-            int totalTasks = tasks.size();
-            int numberOfActiveTasks = 0;
-            for (Task task : tasks) {
-                if (!task.isCompleted()) {
-                    numberOfActiveTasks++;
+            val totalTasks = tasks.size
+            var numberOfActiveTasks = 0
+            for (task in tasks) {
+                if (!task!!.isCompleted) {
+                    numberOfActiveTasks++
                 }
             }
-            return new StatsResult(100f * numberOfActiveTasks / tasks.size(),
-                    100f * (totalTasks - numberOfActiveTasks) / tasks.size());
+            StatsResult(100f * numberOfActiveTasks / tasks.size,
+                    100f * (totalTasks - numberOfActiveTasks) / tasks.size)
         }
     }
 }

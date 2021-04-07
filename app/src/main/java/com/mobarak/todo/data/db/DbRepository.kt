@@ -1,35 +1,23 @@
-package com.mobarak.todo.data.db;
+package com.mobarak.todo.data.db
 
-import com.mobarak.todo.data.db.entity.Task;
-
-import java.util.List;
-
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Single;
+import com.mobarak.todo.data.db.entity.Task
+import io.reactivex.Completable
+import io.reactivex.Flowable
+import io.reactivex.Single
 
 /**
  * This is repository class for database and handle all kind of database operation through this
  * @author mobarak
  */
-public interface DbRepository {
-    Flowable<List<Task>> observeTasks();
-
-    Flowable<Task> observeTaskById(long taskId);
-
-    Single<List<Task>> getTasks();
-
-    Single<Task> getTaskById(long taskId);
-
-    Completable insertTask(Task task);
-
-    Completable updateTask(Task task);
-
-    Completable updateCompleted(long taskId, boolean completed);
-
-    Completable deleteTaskById(long taskId);
-
-    Completable deleteTasks();
-
-    Completable deleteCompletedTasks();
+interface DbRepository {
+    fun observeTasks(): Flowable<List<Task?>?>?
+    fun observeTaskById(taskId: Long): Flowable<Task?>?
+    val tasks: Single<List<Task?>?>?
+    fun getTaskById(taskId: Long): Single<Task?>?
+    fun insertTask(task: Task?): Completable?
+    fun updateTask(task: Task?): Completable?
+    fun updateCompleted(taskId: Long, completed: Boolean): Completable?
+    fun deleteTaskById(taskId: Long): Completable?
+    fun deleteTasks(): Completable?
+    fun deleteCompletedTasks(): Completable?
 }

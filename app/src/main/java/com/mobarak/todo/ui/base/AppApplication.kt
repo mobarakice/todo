@@ -1,22 +1,18 @@
-package com.mobarak.todo.ui.base;
+package com.mobarak.todo.ui.base
 
-import android.app.Application;
-import android.content.Context;
+import android.app.Application
+import android.content.Context
 
-public class AppApplication extends Application {
-    private static AppApplication mInstance;
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mInstance = this;
+class AppApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        instance = this
     }
 
-    public static AppApplication getInstance() {
-        return mInstance;
-    }
-
-    public static Context getAppContext() {
-        return mInstance.getApplicationContext();
+    companion object {
+        var instance: AppApplication? = null
+            private set
+        val appContext: Context
+            get() = instance!!.applicationContext
     }
 }

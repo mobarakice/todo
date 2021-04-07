@@ -1,8 +1,7 @@
-package com.mobarak.todo.utility;
+package com.mobarak.todo.utility
 
-public class Utility {
-
-    public static boolean isNullOrEmpty(String text) {
-        return text == null || text.trim().length() <= 0;
+object Utility {
+    fun isNullOrEmpty(text: String?): Boolean {
+        return text == null || text.trim { it <= ' ' }.length <= 0
     }
 }
