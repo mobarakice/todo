@@ -8,21 +8,35 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mobarak.todo.data.db.entity.Task
 import com.mobarak.todo.databinding.TaskItemBinding
 
-class TasksAdapter(private val viewModel: TasksViewModel) : ListAdapter<Task?, TasksAdapter.ViewHolder>(TaskDiffCallback()) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(TaskItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-    }
-
+class TasksAdapter(private val viewModel: TasksViewModel) :
+        ListAdapter<Task, TasksAdapter.ViewHolder>(TaskDiffCallback()) {
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
+
         holder.bind(viewModel, item)
     }
 
-    class ViewHolder(var binding: TaskItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(viewModel: TasksViewModel?, item: Task?) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        return ViewHolder.from(parent)
+    }
+
+    class ViewHolder private constructor(val binding: TaskItemBinding) :
+            RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(viewModel: TasksViewModel, item: Task) {
+
             binding.viewmodel = viewModel
             binding.task = item
             binding.executePendingBindings()
+        }
+
+        companion object {
+            fun from(parent: ViewGroup): ViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = TaskItemBinding.inflate(layoutInflater, parent, false)
+
+                return ViewHolder(binding)
+            }
         }
     }
 }

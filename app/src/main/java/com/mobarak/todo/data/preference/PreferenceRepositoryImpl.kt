@@ -5,17 +5,4 @@ package com.mobarak.todo.data.preference
  *
  * @author mobarak
  */
-object PreferenceRepositoryImpl : PreferenceRepository {
-    private var mInstance: PreferenceRepositoryImpl? = null
-    val instance: PreferenceRepositoryImpl?
-        get() {
-            if (mInstance == null) {
-                synchronized(PreferenceRepositoryImpl::class.java) {
-                    if (mInstance == null) {
-                        mInstance = PreferenceRepositoryImpl()
-                    }
-                }
-            }
-            return mInstance
-        }
-}
+object PreferenceRepositoryImpl : PreferenceRepository

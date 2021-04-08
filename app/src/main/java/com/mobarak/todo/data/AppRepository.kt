@@ -10,7 +10,7 @@ import com.mobarak.todo.data.remote.RemoteRepository
  * @author mobarak
  */
 interface AppRepository {
-    val dbRepository: DbRepository?
-    val prefRepository: PreferenceRepository?
-    val remoteRepository: RemoteRepository?
+    fun getDbRepository(): DbRepository
+    fun getPrefRepository(): PreferenceRepository
+    fun getRemoteRepository(): RemoteRepository
 }

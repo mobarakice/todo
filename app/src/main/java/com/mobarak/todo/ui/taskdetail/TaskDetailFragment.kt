@@ -1,54 +1,85 @@
 package com.mobarak.todo.ui.taskdetail
 
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
+import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import com.google.android.material.snackbar.Snackbar
+import com.mobarak.todo.R
 import com.mobarak.todo.databinding.TaskdetailFragBinding
+import com.mobarak.todo.ui.base.DELETE_RESULT_OK
+import com.mobarak.todo.utility.EventObserver
+import com.mobarak.todo.utility.getViewModelFactory
+import com.mobarak.todo.utility.setupRefreshLayout
+import com.mobarak.todo.utility.setupSnackbar
 
 class TaskDetailFragment : Fragment() {
-    private var viewModel: TaskDetailViewModel? = null
-    private var viewDataBinding: TaskdetailFragBinding? = null
-    private val args: TaskDetailFragmentArgs? = null
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root: View = inflater.inflate(R.layout.taskdetail_frag, container, false)
-        viewDataBinding = TaskdetailFragBinding.bind(root)
-        setHasOptionsMenu(true)
-        return root
-    }
+    private lateinit var viewDataBinding: TaskdetailFragBinding
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this,
-                ViewModelFactory(context, AppRepositoryImpl.Companion.getInstance(), this)
-        ).get<TaskDetailViewModel>(TaskDetailViewModel::class.java)
-        if (arguments != null) {
-            viewModel!!.start(TaskDetailFragmentArgs.fromBundle(arguments).getTaskId())
+    private val args: TaskDetailFragmentArgs by navArgs()
+
+    private val viewModel by viewModels<TaskDetailViewModel> { getViewModelFactory() }
+
+    override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+    ): View {
+        val view = inflater.inflate(R.layout.taskdetail_frag, container, false)
+        viewDataBinding = TaskdetailFragBinding.bind(view).apply {
+            viewmodel = viewModel
         }
-        viewDataBinding!!.lifecycleOwner = this
-        viewDataBinding!!.viewmodel = viewModel
-        ViewUtil.setupRefreshLayout(activity, viewDataBinding!!.refreshLayout, null)
-        setupSnackbar()
+        viewDataBinding.lifecycleOwner = this.viewLifecycleOwner
+
+        viewModel.start(args.taskId)
+
+        setHasOptionsMenu(true)
+        return view
     }
 
-    private fun setupSnackbar() {
-        if (activity != null) viewModel!!.snackbarText.observe(activity, Observer { message: String? ->
-            ViewUtil.showSnackbar(viewDataBinding!!.root, message)
-            NavHostFragment.findNavController(this).popBackStack()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupFab()
+        view.setupSnackbar(this, viewModel.snackbarText, Snackbar.LENGTH_SHORT)
+        setupNavigation()
+        this.setupRefreshLayout(viewDataBinding.refreshLayout)
+    }
+
+    private fun setupNavigation() {
+        viewModel.deleteTaskEvent.observe(this.viewLifecycleOwner, EventObserver {
+            val action = TaskDetailFragmentDirections
+                    .actionTaskDetailFragmentToTasksFragment(DELETE_RESULT_OK)
+            findNavController().navigate(action)
         })
+        viewModel.editTaskEvent.observe(this.viewLifecycleOwner, EventObserver {
+            val action = TaskDetailFragmentDirections
+                    .actionTaskDetailFragmentToAddEditTaskFragment(
+                            args.taskId,
+                            resources.getString(R.string.edit_task)
+                    )
+            findNavController().navigate(action)
+        })
+    }
+
+    private fun setupFab() {
+        activity?.findViewById<View>(R.id.edit_task_fab)?.setOnClickListener {
+            viewModel.editTask()
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_delete -> {
+                viewModel.deleteTask()
+                true
+            }
+            else -> false
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.taskdetail_fragment_menu, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.menu_delete) {
-            viewModel!!.deleteTask()
-            return true
-        }
-        return super.onOptionsItemSelected(item)
     }
 }

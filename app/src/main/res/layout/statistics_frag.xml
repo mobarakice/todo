@@ -53,7 +53,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/statistics_no_tasks"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:visibility="@{viewmodel.empty() ? View.VISIBLE : View.GONE}" />
+                    android:visibility="@{viewmodel.empty ? View.VISIBLE : View.GONE}" />
 
                 <TextView
                     android:id="@+id/stats_active_text"

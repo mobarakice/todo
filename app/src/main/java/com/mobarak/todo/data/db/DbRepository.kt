@@ -1,23 +1,21 @@
 package com.mobarak.todo.data.db
 
 import com.mobarak.todo.data.db.entity.Task
-import io.reactivex.Completable
-import io.reactivex.Flowable
-import io.reactivex.Single
+import kotlinx.coroutines.flow.Flow
 
 /**
  * This is repository class for database and handle all kind of database operation through this
  * @author mobarak
  */
 interface DbRepository {
-    fun observeTasks(): Flowable<List<Task?>?>?
-    fun observeTaskById(taskId: Long): Flowable<Task?>?
-    val tasks: Single<List<Task?>?>?
-    fun getTaskById(taskId: Long): Single<Task?>?
-    fun insertTask(task: Task?): Completable?
-    fun updateTask(task: Task?): Completable?
-    fun updateCompleted(taskId: Long, completed: Boolean): Completable?
-    fun deleteTaskById(taskId: Long): Completable?
-    fun deleteTasks(): Completable?
-    fun deleteCompletedTasks(): Completable?
+    fun observeTasks(): Flow<List<Task>>
+    fun observeTaskById(taskId: Long): Flow<Task>
+    suspend fun getTasks(): List<Task>
+    suspend fun getTaskById(taskId: Long): Task?
+    suspend fun insertTask(task: Task)
+    suspend fun updateTask(task: Task): Int
+    suspend fun updateCompleted(taskId: Long, completed: Boolean): Int
+    suspend fun deleteTaskById(taskId: Long): Int
+    suspend fun deleteTasks()
+    suspend fun deleteCompletedTasks(): Int
 }

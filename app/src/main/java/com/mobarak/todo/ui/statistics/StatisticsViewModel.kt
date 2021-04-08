@@ -1,38 +1,36 @@
 package com.mobarak.todo.ui.statistics
 
-import android.content.Context
-import android.util.Log
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.*
 import com.mobarak.todo.data.AppRepository
 import com.mobarak.todo.data.db.entity.Task
-import com.mobarak.todo.ui.base.BaseViewModel
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 
-class StatisticsViewModel(context: Context?, repository: AppRepository?) : BaseViewModel(context, repository) {
-    private val tasks: MutableLiveData<List<Task?>?>? = MutableLiveData() /*tasksRepository.observeTasks()*/
-    private val stats = MutableLiveData<StatsResult?>()
-    var activeTasksPercent = MutableLiveData(0f)
-    var completedTasksPercent = MutableLiveData(0f)
-    var dataLoading = MutableLiveData(false)
-    fun empty(): Boolean {
-        return tasks != null && tasks.value != null && tasks.value!!.isEmpty()
+
+class StatisticsViewModel(private val repository: AppRepository) : ViewModel() {
+    private val tasks: LiveData<List<Task>> = repository.getDbRepository().observeTasks().asLiveData()
+    private val _dataLoading = MutableLiveData<Boolean>(false)
+    private val stats: LiveData<StatsResult?> = tasks.map {
+        if (it.isNotEmpty()) {
+            getActiveAndCompletedStats(it)
+        } else {
+            null
+        }
     }
 
+    val activeTasksPercent = stats.map {
+        it?.activeTasksPercent ?: 0f
+    }
+    val completedTasksPercent: LiveData<Float> = stats.map { it?.completedTasksPercent ?: 0f }
+    val dataLoading: LiveData<Boolean> = _dataLoading
+    val error: LiveData<Boolean> = tasks.map { it.isNullOrEmpty() }
+    val empty: LiveData<Boolean> = tasks.map { it.isNullOrEmpty() }
+
     fun refresh() {
-        dataLoading.value = true
-        mDisposable!!.add(repository.dbRepository.observeTasks()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ items: List<Task?>? ->
-                    tasks!!.value = items
-                    stats.value = StatisticsUtils.getActiveAndCompletedStats(tasks.value)
-                    dataLoading.value = false
-                    activeTasksPercent.value = stats.value!!.activeTasksPercent
-                    completedTasksPercent.value = stats.value!!.completedTasksPercent
-                    empty()
-                }
-                ) { throwable: Throwable? -> Log.e(TAG, "no task found", throwable) })
+        _dataLoading.value = true
+        viewModelScope.launch {
+            repository.getDbRepository().getTasks()
+            _dataLoading.value = false
+        }
     }
 
     companion object {

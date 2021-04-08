@@ -119,7 +119,7 @@
             android:layout_margin="@dimen/fab_margin"
             android:src="@drawable/ic_edit"
             app:fabSize="normal"
-            android:onClick="@{(view) -> viewmodel.editTask(view)}"
+            android:onClick="@{(view) -> viewmodel.editTask()}"
             app:layout_anchor="@id/refresh_layout"
             app:layout_anchorGravity="bottom|right|end" />
 

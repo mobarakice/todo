@@ -10,9 +10,9 @@ class AppApplication : Application() {
     }
 
     companion object {
-        var instance: AppApplication? = null
-            private set
+        private lateinit var instance: AppApplication
+
         val appContext: Context
-            get() = instance!!.applicationContext
+            get() = instance.applicationContext
     }
 }

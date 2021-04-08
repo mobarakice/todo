@@ -1,36 +1,82 @@
 package com.mobarak.todo.ui.tasks
 
-import android.content.Context
-import android.util.Log
-import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.lifecycle.MutableLiveData
-import androidx.navigation.NavDirections
-import androidx.navigation.Navigation
+import androidx.lifecycle.*
 import com.mobarak.todo.R
 import com.mobarak.todo.data.AppRepository
 import com.mobarak.todo.data.db.entity.Task
-import com.mobarak.todo.ui.base.BaseViewModel
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.mobarak.todo.ui.base.ADD_EDIT_RESULT_OK
+import com.mobarak.todo.ui.base.DELETE_RESULT_OK
+import com.mobarak.todo.ui.base.EDIT_RESULT_OK
+import com.mobarak.todo.utility.Event
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import java.util.*
 
-class TasksViewModel(context: Context?, repository: AppRepository?) : BaseViewModel(context, repository) {
-    var filteredTasks = MutableLiveData<List<Task?>>()
-    private val tasks = MutableLiveData<List<Task?>?>()
-    var dataLoading = MutableLiveData<Boolean>()
-    var empty = MutableLiveData<Boolean>()
-    var currentFilteringLabel = MutableLiveData<Int>()
-    var noTasksLabel = MutableLiveData<Int>()
-    var noTaskIconRes = MutableLiveData<Int>()
-    val snackbarText = MutableLiveData<String?>()
-    fun setSnackbarText(message: String?) {
-        snackbarText.value = message
+class TasksViewModel(private val repository: AppRepository,
+                     private val savedStateHandle: SavedStateHandle) : ViewModel() {
+    private val _forceUpdate = MutableLiveData<Boolean>(false)
+
+    private val _items: LiveData<List<Task>> = _forceUpdate.switchMap { forceUpdate ->
+        if (forceUpdate) {
+            _dataLoading.value = true
+            viewModelScope.launch {
+                refresh()
+                _dataLoading.value = false
+            }
+        }
+        repository.getDbRepository()
+                .observeTasks()
+                .distinctUntilChanged()
+                .asLiveData()
+                .switchMap {
+                    liveData {
+                        filterItems(it, getSavedFilterType())
+                    }
+                }
     }
 
-    fun empty(items: List<Task?>?) {
-        empty.value = items == null || items.size <= 0
+    val items: LiveData<List<Task>> = _items
+
+    private val _dataLoading = MutableLiveData<Boolean>()
+    val dataLoading: LiveData<Boolean> = _dataLoading
+
+    private val _currentFilteringLabel = MutableLiveData<Int>()
+    val currentFilteringLabel: LiveData<Int> = _currentFilteringLabel
+
+    private val _noTasksLabel = MutableLiveData<Int>()
+    val noTasksLabel: LiveData<Int> = _noTasksLabel
+
+    private val _noTaskIconRes = MutableLiveData<Int>()
+    val noTaskIconRes: LiveData<Int> = _noTaskIconRes
+
+    private val _tasksAddViewVisible = MutableLiveData<Boolean>()
+    val tasksAddViewVisible: LiveData<Boolean> = _tasksAddViewVisible
+
+    private val _snackbarText = MutableLiveData<Event<Int>>()
+    val snackbarText: LiveData<Event<Int>> = _snackbarText
+
+    // Not used at the moment
+    private val isDataLoadingError = MutableLiveData<Boolean>()
+
+    private val _openTaskEvent = MutableLiveData<Event<Long>>()
+    val openTaskEvent: LiveData<Event<Long>> = _openTaskEvent
+
+    private val _newTaskEvent = MutableLiveData<Event<Unit>>()
+    val newTaskEvent: LiveData<Event<Unit>> = _newTaskEvent
+
+    private var resultMessageShown: Boolean = false
+
+    // This LiveData depends on another so we can use a transformation.
+    val empty: LiveData<Boolean> = Transformations.map(_items) {
+        it.isEmpty()
+    }
+
+    init {
+        // Set initial state
+        setFiltering(getSavedFilterType())
+        loadTasks(true)
     }
 
     /**
@@ -40,95 +86,127 @@ class TasksViewModel(context: Context?, repository: AppRepository?) : BaseViewMo
      * [TasksFilterType.COMPLETED_TASKS], or
      * [TasksFilterType.ACTIVE_TASKS]
      */
-    fun setFiltering(requestType: FilterType?) {
-//        savedStateHandle.set(TASKS_FILTER_SAVED_STATE_KEY, requestType)
+    fun setFiltering(requestType: FilterType) {
+        savedStateHandle.set(TASKS_FILTER_SAVED_STATE_KEY, requestType)
 
         // Depending on the filter type, set the filtering label, icon drawables, etc.
         when (requestType) {
-            FilterType.ALL_TASKS -> setFilter(
-                    R.string.label_all, R.string.no_tasks_all,
-                    R.drawable.logo_no_fill
-            )
-            FilterType.ACTIVE_TASKS -> setFilter(
-                    R.string.label_active, R.string.no_tasks_active,
-                    R.drawable.ic_check_circle_96dp
-            )
-            FilterType.COMPLETED_TASKS -> setFilter(
-                    R.string.label_completed, R.string.no_tasks_completed,
-                    R.drawable.ic_verified_user_96dp
-            )
+            FilterType.ALL_TASKS -> {
+                setFilter(
+                        R.string.label_all, R.string.no_tasks_all,
+                        R.drawable.logo_no_fill, true
+                )
+            }
+            FilterType.ACTIVE_TASKS -> {
+                setFilter(
+                        R.string.label_active, R.string.no_tasks_active,
+                        R.drawable.ic_check_circle_96dp, false
+                )
+            }
+            FilterType.COMPLETED_TASKS -> {
+                setFilter(
+                        R.string.label_completed, R.string.no_tasks_completed,
+                        R.drawable.ic_verified_user_96dp, false
+                )
+            }
         }
         // Refresh list
+        loadTasks(false)
     }
 
     private fun setFilter(
             @StringRes filteringLabelString: Int,
             @StringRes noTasksLabelString: Int,
-            @DrawableRes noTaskIconDrawable: Int
+            @DrawableRes noTaskIconDrawable: Int,
+            tasksAddVisible: Boolean
     ) {
-        currentFilteringLabel.value = filteringLabelString
-        noTasksLabel.value = noTasksLabelString
-        noTaskIconRes.value = noTaskIconDrawable
+        _currentFilteringLabel.value = filteringLabelString
+        _noTasksLabel.value = noTasksLabelString
+        _noTaskIconRes.value = noTaskIconDrawable
+        _tasksAddViewVisible.value = tasksAddVisible
     }
 
-    fun completeTask(task: Task, completed: Boolean) {
-        mDisposable!!.add(repository.dbRepository.updateCompleted(task.id, completed)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ Log.e(TAG, "no task found") }
-                ) { throwable: Throwable? -> Log.e(TAG, "no task found", throwable) })
-        if (completed) {
-            setSnackbarText(context!!.getString(R.string.task_marked_complete))
-        } else {
-            setSnackbarText(context!!.getString(R.string.task_marked_active))
-        }
+    /**
+     * @param forceUpdate Pass in true to refresh the data in the [TasksDataSource]
+     */
+    fun loadTasks(forceUpdate: Boolean) {
+        _forceUpdate.value = forceUpdate
     }
 
-    fun loadTasks() {
-        mDisposable!!.add(repository.dbRepository.observeTasks()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ tasks: List<Task?>? ->
-                    this.tasks.value = tasks
-                    filterItems(FilterType.ALL_TASKS)
+    private fun filterItems(tasks: List<Task>, filteringType: FilterType): List<Task> {
+        val tasksToShow = ArrayList<Task>()
+        // We filter the tasks based on the requestType
+        for (task in tasks) {
+            when (filteringType) {
+                FilterType.ALL_TASKS -> tasksToShow.add(task)
+                FilterType.ACTIVE_TASKS -> if (task.isActive) {
+                    tasksToShow.add(task)
                 }
-                ) { throwable: Throwable? ->
-                    Log.e(TAG, "no task found", throwable)
-                    empty(tasks.value)
-                })
-    }
-
-    fun filterItems(filterType: FilterType?) {
-        val filterTask: MutableList<Task?> = ArrayList()
-        setFiltering(filterType)
-        if (tasks.value != null) {
-            when (filterType) {
-                FilterType.ALL_TASKS -> filterTask.addAll(tasks.value!!)
-                FilterType.ACTIVE_TASKS -> for (task in tasks.value!!) {
-                    if (!task!!.isCompleted) {
-                        filterTask.add(task)
-                    }
-                }
-                FilterType.COMPLETED_TASKS -> for (task in tasks.value!!) {
-                    if (task!!.isCompleted) {
-                        filterTask.add(task)
-                    }
+                FilterType.COMPLETED_TASKS -> if (task.isCompleted) {
+                    tasksToShow.add(task)
                 }
             }
         }
-        filteredTasks.value = filterTask
-        empty(filteredTasks.value)
+        return tasksToShow
     }
 
-    fun openTask(view: View?, taskId: Long) {
-        val action: NavDirections = TasksFragmentDirections
-                .actionTasksFragmentToTaskDetailFragment(taskId)
-        Navigation.findNavController(view!!).navigate(action)
+    fun refresh() {
+        _forceUpdate.value = true
     }
 
-    fun refresh() {}
+    private fun getSavedFilterType(): FilterType {
+        return savedStateHandle.get(TASKS_FILTER_SAVED_STATE_KEY) ?: FilterType.ALL_TASKS
+    }
 
     companion object {
         private val TAG = TasksViewModel::class.java.simpleName
     }
+
+    fun clearCompletedTasks() {
+        viewModelScope.launch {
+            repository.getDbRepository().deleteCompletedTasks()
+            showSnackbarMessage(R.string.completed_tasks_cleared)
+        }
+    }
+
+    fun completeTask(task: Task, completed: Boolean) = viewModelScope.launch {
+        if (completed) {
+            repository.getDbRepository().updateTask(task)
+            showSnackbarMessage(R.string.task_marked_complete)
+        } else {
+            repository.getDbRepository().updateCompleted(task.id, completed)
+            showSnackbarMessage(R.string.task_marked_active)
+        }
+    }
+
+    /**
+     * Called by the Data Binding library and the FAB's click listener.
+     */
+    fun addNewTask() {
+        _newTaskEvent.value = Event(Unit)
+    }
+
+    /**
+     * Called by Data Binding.
+     */
+    fun openTask(taskId: Long) {
+        _openTaskEvent.value = Event(taskId)
+    }
+
+    fun showEditResultMessage(result: Int) {
+        if (resultMessageShown) return
+        when (result) {
+            EDIT_RESULT_OK -> showSnackbarMessage(R.string.successfully_saved_task_message)
+            ADD_EDIT_RESULT_OK -> showSnackbarMessage(R.string.successfully_added_task_message)
+            DELETE_RESULT_OK -> showSnackbarMessage(R.string.successfully_deleted_task_message)
+        }
+        resultMessageShown = true
+    }
+
+    private fun showSnackbarMessage(message: Int) {
+        _snackbarText.value = Event(message)
+    }
 }
+
+// Used to save the current filtering in SavedStateHandle.
+const val TASKS_FILTER_SAVED_STATE_KEY = "TASKS_FILTER_SAVED_STATE_KEY"

@@ -13,28 +13,33 @@ import com.mobarak.todo.data.remote.RemoteRepositoryImpl
  * @author mobarak
  */
 class AppRepositoryImpl private constructor() : AppRepository {
-    override val dbRepository: DbRepository?
-    override val prefRepository: PreferenceRepository?
-    override val remoteRepository: RemoteRepository?
+    private var dbRepository: DbRepository
 
     companion object {
         private var mInstance: AppRepositoryImpl? = null
-        val instance: AppRepositoryImpl?
-            get() {
-                if (mInstance == null) {
-                    synchronized(AppRepositoryImpl::class.java) {
-                        if (mInstance == null) {
-                            mInstance = AppRepositoryImpl()
-                        }
+        fun getInstance(): AppRepositoryImpl {
+            if (mInstance == null) {
+                synchronized(AppRepositoryImpl::class.java) {
+                    if (mInstance == null) {
+                        mInstance = AppRepositoryImpl()
                     }
                 }
-                return mInstance
             }
+            return mInstance!!
+        }
     }
 
     init {
-        dbRepository = DbRepositoryImpl.Companion.getInstance()
-        prefRepository = PreferenceRepositoryImpl.getInstance()
-        remoteRepository = RemoteRepositoryImpl.getInstance()
+        dbRepository = DbRepositoryImpl.getInstance()!!
+    }
+
+    override fun getDbRepository(): DbRepository = dbRepository
+
+    override fun getPrefRepository(): PreferenceRepository {
+        TODO("Not yet implemented")
+    }
+
+    override fun getRemoteRepository(): RemoteRepository {
+        TODO("Not yet implemented")
     }
 }

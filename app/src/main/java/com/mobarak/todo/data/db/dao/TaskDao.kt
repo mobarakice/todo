@@ -2,9 +2,7 @@ package com.mobarak.todo.data.db.dao
 
 import androidx.room.*
 import com.mobarak.todo.data.db.entity.Task
-import io.reactivex.Completable
-import io.reactivex.Flowable
-import io.reactivex.Single
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Data Access Object for the task table.
@@ -18,7 +16,7 @@ interface TaskDao {
      * @return all tasks.
      */
     @Query("SELECT * FROM Tasks")
-    fun observeTasks(): Flowable<List<Task?>?>?
+    fun observeTasks(): Flow<List<Task>>
 
     /**
      * Observes a single task.
@@ -27,15 +25,15 @@ interface TaskDao {
      * @return the task with taskId.
      */
     @Query("SELECT * FROM Tasks WHERE id = :taskId")
-    fun observeTaskById(taskId: Long): Flowable<Task?>?
+    fun observeTaskById(taskId: Long): Flow<Task>
 
     /**
      * Select all tasks from the tasks table.
      *
      * @return all tasks.
      */
-    @get:Query("SELECT * FROM Tasks")
-    val tasks: Single<List<Task?>?>?
+    @Query("SELECT * FROM Tasks")
+    suspend fun getTasks(): List<Task>
 
     /**
      * Select a task by id.
@@ -44,7 +42,7 @@ interface TaskDao {
      * @return the task with taskId.
      */
     @Query("SELECT * FROM Tasks WHERE id = :taskId")
-    fun getTaskById(taskId: Long): Single<Task?>?
+    suspend fun getTaskById(taskId: Long): Task?
 
     /**
      * Insert a task in the database. If the task already exists, replace it.
@@ -52,7 +50,7 @@ interface TaskDao {
      * @param task the task to be inserted.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertTask(task: Task?): Completable?
+    suspend fun insertTask(task: Task)
 
     /**
      * Update a task.
@@ -61,7 +59,7 @@ interface TaskDao {
      * @return the number of tasks updated. This should always be 1.
      */
     @Update
-    fun updateTask(task: Task?): Completable?
+    suspend fun updateTask(task: Task): Int
 
     /**
      * Update the complete status of a task
@@ -70,7 +68,7 @@ interface TaskDao {
      * @param completed status to be updated
      */
     @Query("UPDATE tasks SET is_completed = :completed WHERE id = :taskId")
-    fun updateCompleted(taskId: Long, completed: Boolean): Completable?
+    suspend fun updateCompleted(taskId: Long, completed: Boolean): Int
 
     /**
      * Delete a task by id.
@@ -78,13 +76,13 @@ interface TaskDao {
      * @return the number of tasks deleted. This should always be 1.
      */
     @Query("DELETE FROM Tasks WHERE id = :taskId")
-    fun deleteTaskById(taskId: Long): Completable?
+    suspend fun deleteTaskById(taskId: Long): Int
 
     /**
      * Delete all tasks.
      */
     @Query("DELETE FROM Tasks")
-    fun deleteTasks(): Completable?
+    suspend fun deleteTasks()
 
     /**
      * Delete all completed tasks from the table.
@@ -92,5 +90,5 @@ interface TaskDao {
      * @return the number of tasks deleted.
      */
     @Query("DELETE FROM Tasks WHERE is_completed = 1")
-    fun deleteCompletedTasks(): Completable?
+    suspend fun deleteCompletedTasks(): Int
 }

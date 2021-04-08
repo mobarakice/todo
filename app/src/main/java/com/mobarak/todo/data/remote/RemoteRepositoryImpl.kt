@@ -5,17 +5,4 @@ package com.mobarak.todo.data.remote
  *
  * @author mobarak
  */
-object RemoteRepositoryImpl : RemoteRepository {
-    private var mInstance: RemoteRepositoryImpl? = null
-    val instance: RemoteRepositoryImpl?
-        get() {
-            if (mInstance == null) {
-                synchronized(RemoteRepositoryImpl::class.java) {
-                    if (mInstance == null) {
-                        mInstance = RemoteRepositoryImpl()
-                    }
-                }
-            }
-            return mInstance
-        }
-}
+object RemoteRepositoryImpl : RemoteRepository

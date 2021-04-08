@@ -1,42 +1,47 @@
 package com.mobarak.todo.ui.addedittask
 
-import android.content.Context
-import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.mobarak.todo.R
 import com.mobarak.todo.data.AppRepository
 import com.mobarak.todo.data.db.entity.Task
-import com.mobarak.todo.ui.base.BaseViewModel
 import com.mobarak.todo.utility.Event
-import com.mobarak.todo.utility.Utility
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 
-class AddEditTaskViewModel(context: Context?, repository: AppRepository?) : BaseViewModel(context, repository) {
+
+class AddEditTaskViewModel(private val repository: AppRepository) : ViewModel() {
     // Two-way databinding, exposing MutableLiveData
-    var title = MutableLiveData<String?>()
-    var description = MutableLiveData<String?>()
-    var dataLoading = MutableLiveData(false)
-    val snackbarText = MutableLiveData<Event<String>>()
-    val taskUpdatedEvent = MutableLiveData<Event<Boolean>>()
-    private fun setSnackbarText(text: String) {
-        snackbarText.value = Event(text)
-    }
+    val title = MutableLiveData<String>()
 
-    fun setTaskUpdatedEvent(update: Boolean) {
-        taskUpdatedEvent.value = Event(update)
-    }
+    // Two-way databinding, exposing MutableLiveData
+    val description = MutableLiveData<String>()
+
+    private val _dataLoading = MutableLiveData<Boolean>()
+    val dataLoading: LiveData<Boolean> = _dataLoading
+
+    private val _snackbarText = MutableLiveData<Event<Int>>()
+    val snackbarText: LiveData<Event<Int>> = _snackbarText
+
+    private val _taskUpdatedEvent = MutableLiveData<Event<Unit>>()
+    val taskUpdatedEvent: LiveData<Event<Unit>> = _taskUpdatedEvent
 
     private var taskId: Long? = null
-    private var isNewTask = false
+
+    private var isNewTask: Boolean = false
+
     private var isDataLoaded = false
+
     private var taskCompleted = false
+
     fun start(taskId: Long?) {
-        if (dataLoading.value != null && dataLoading.value!!) {
+        if (_dataLoading.value == true) {
             return
         }
+
         this.taskId = taskId
-        if (taskId == null || taskId == -1L) {
+        if (taskId == null) {
             // No need to populate, it's a new task
             isNewTask = true
             return
@@ -45,77 +50,68 @@ class AddEditTaskViewModel(context: Context?, repository: AppRepository?) : Base
             // No need to populate, already have data.
             return
         }
+
         isNewTask = false
-        dataLoading.value = true
-        loadTask(taskId)
-    }
+        _dataLoading.value = true
 
-    private fun loadTask(taskId: Long) {
-        mDisposable!!.add(repository.dbRepository.observeTaskById(taskId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ task: Task? -> onTaskLoaded(task) }
-                ) { throwable: Throwable? ->
+        viewModelScope.launch {
+            repository.getDbRepository().getTaskById(taskId).let { task ->
+                if (task != null) {
+                    onTaskLoaded(task)
+                } else {
                     onDataNotAvailable()
-                    Log.e(TAG, "no task found", throwable)
-                })
+                }
+            }
+        }
     }
 
-    private fun onTaskLoaded(task: Task?) {
-        title.setValue(task.getTitle())
-        description.setValue(task.getDescription())
-        taskCompleted = task!!.isCompleted
-        dataLoading.value = false
+    private fun onTaskLoaded(task: Task) {
+        title.value = task.title
+        description.value = task.description
+        taskCompleted = task.isCompleted
+        _dataLoading.value = false
         isDataLoaded = true
     }
 
     private fun onDataNotAvailable() {
-        dataLoading.value = false
+        _dataLoading.value = false
     }
 
     // Called when clicking on fab.
     fun saveTask() {
         val currentTitle = title.value
         val currentDescription = description.value
-        if (Utility.isNullOrEmpty(currentTitle) || Utility.isNullOrEmpty(currentDescription)) {
-            setSnackbarText(context!!.getString(R.string.empty_task_message))
+
+        if (currentTitle == null || currentDescription == null) {
+            _snackbarText.value = Event(R.string.empty_task_message)
             return
         }
+        if (Task(currentTitle, currentDescription).isEmpty) {
+            _snackbarText.value = Event(R.string.empty_task_message)
+            return
+        }
+
         val currentTaskId = taskId
         if (isNewTask || currentTaskId == null) {
             createTask(Task(currentTitle, currentDescription))
         } else {
-            val task = Task(currentTaskId, currentTitle, currentDescription, taskCompleted)
+            val task = Task(currentTitle, currentDescription, taskCompleted, currentTaskId)
             updateTask(task)
         }
     }
 
-    private fun createTask(newTask: Task) {
-        mDisposable!!.add(repository.dbRepository.insertTask(newTask)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    setSnackbarText(context!!.getString(R.string.successfully_added_task_message))
-                    setTaskUpdatedEvent(true)
-                }
-                ) { throwable: Throwable? -> Log.e(TAG, "new task adding failed", throwable) })
+    private fun createTask(newTask: Task) = viewModelScope.launch {
+        repository.getDbRepository().insertTask(newTask)
+        _taskUpdatedEvent.value = Event(Unit)
     }
 
     private fun updateTask(task: Task) {
         if (isNewTask) {
             throw RuntimeException("updateTask() was called but task is new.")
         }
-        mDisposable!!.add(repository.dbRepository.updateTask(task)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    setSnackbarText(context!!.getString(R.string.successfully_updated_task_message))
-                    setTaskUpdatedEvent(true)
-                }
-                ) { throwable: Throwable? -> Log.e(TAG, "task updating failed", throwable) })
-    }
-
-    companion object {
-        private val TAG = AddEditTaskViewModel::class.java.simpleName
+        viewModelScope.launch {
+            repository.getDbRepository().updateTask(task)
+            _taskUpdatedEvent.value = Event(Unit)
+        }
     }
 }

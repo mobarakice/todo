@@ -1,82 +1,95 @@
 package com.mobarak.todo.ui.taskdetail
 
-import android.content.Context
-import android.util.Log
-import android.view.View
+import androidx.annotation.StringRes
+import androidx.lifecycle.*
+import com.mobarak.todo.R
+import com.mobarak.todo.data.AppRepository
 import com.mobarak.todo.data.db.entity.Task
-import io.reactivex.functions.Action
-import io.reactivex.functions.Consumer
+import com.mobarak.todo.utility.Event
+import kotlinx.coroutines.launch
 
-class TaskDetailViewModel(context: Context?, repository: AppRepository?) : BaseViewModel(context, repository) {
-    private val _taskId: MutableLiveData<Long> = MutableLiveData<Long>()
-    var task: MutableLiveData<Task>? = MutableLiveData<Task>()
-    var isDataAvailable: MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
-    var dataLoading: MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
-    var completed: MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
-    var editTaskEvent: MutableLiveData<String> = MutableLiveData<String>()
-    var deleteTaskEvent: MutableLiveData<String> = MutableLiveData<String>()
-    var snackbarText: MutableLiveData<String> = MutableLiveData<String>()
-    fun deleteTask() {
-        if (_taskId.getValue() != null) mDisposable.add(repository.getDbRepository().deleteTaskById(_taskId.getValue())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(Action { snackbarText.setValue(context.getString(R.string.menu_delete_task)) },
-                        Consumer { throwable: Throwable? -> Log.e(TAG, "Task deleted", throwable) }))
+class TaskDetailViewModel(private val repository: AppRepository) : ViewModel() {
+    private val _taskId = MutableLiveData<Long>()
+
+    private val _task = _taskId.switchMap { taskId ->
+        repository.getDbRepository().observeTaskById(taskId).asLiveData().map {
+            computeResult(it)
+        }
+    }
+    val task: LiveData<Task?> = _task
+
+    val isDataAvailable: LiveData<Boolean> = _task.map { it != null }
+
+    private val _dataLoading = MutableLiveData<Boolean>()
+    val dataLoading: LiveData<Boolean> = _dataLoading
+
+    private val _editTaskEvent = MutableLiveData<Event<Unit>>()
+    val editTaskEvent: LiveData<Event<Unit>> = _editTaskEvent
+
+    private val _deleteTaskEvent = MutableLiveData<Event<Unit>>()
+    val deleteTaskEvent: LiveData<Event<Unit>> = _deleteTaskEvent
+
+    private val _snackbarText = MutableLiveData<Event<Int>>()
+    val snackbarText: LiveData<Event<Int>> = _snackbarText
+
+    // This LiveData depends on another so we can use a transformation.
+    val completed: LiveData<Boolean> = _task.map { input: Task? ->
+        input?.isCompleted ?: false
     }
 
-    fun editTask(view: View?) {
-        if (_taskId.getValue() != null) {
-            val action: NavDirections = TaskDetailFragmentDirections
-                    .actionTaskDetailFragmentToAddEditTaskFragment(_taskId.getValue(), context.getString(R.string.add_task))
-            Navigation.findNavController(view).navigate(action)
+    fun deleteTask() = viewModelScope.launch {
+        _taskId.value?.let {
+            repository.getDbRepository().deleteTaskById(it)
+            _deleteTaskEvent.value = Event(Unit)
         }
     }
 
-    fun setCompleted(completed: Boolean) {
-        val t: Task = task.getValue()
+    fun editTask() {
+        _editTaskEvent.value = Event(Unit)
+    }
+
+    fun setCompleted(completed: Boolean) = viewModelScope.launch {
+        val task = _task.value ?: return@launch
         if (completed) {
-            //repository.completeTask(task);
-            showSnackbarMessage(context.getString(R.string.task_marked_complete))
+            repository.getDbRepository().updateTask(task)
+            showSnackbarMessage(R.string.task_marked_complete)
         } else {
-            //tasksRepository.activateTask(task)
-            showSnackbarMessage(context.getString(R.string.task_marked_active))
+            repository.getDbRepository().updateTask(task)
+            showSnackbarMessage(R.string.task_marked_active)
         }
     }
 
     fun start(taskId: Long) {
         // If we're already loading or already loaded, return (might be a config change)
-        if (dataLoading.getValue() != null && dataLoading.getValue()
-                || _taskId.getValue() != null && taskId == _taskId.getValue()) {
+        if (_dataLoading.value == true || taskId == _taskId.value) {
             return
         }
         // Trigger the load
-        _taskId.setValue(taskId)
-        loadTask()
+        _taskId.value = taskId
     }
 
-    private fun loadTask() {
-        mDisposable.add(repository.getDbRepository().observeTaskById(_taskId.getValue())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(Consumer { item: Task? ->
-                    task.setValue(item)
-                    isDataAvailable.setValue(true)
-                },
-                        Consumer { throwable: Throwable? -> Log.e(TAG, "no task found", throwable) }))
-    }
-
-    private fun computeResult(): Task? {
-        return null
+    private fun computeResult(task: Task): Task? {
+        return if (task != null) {
+            task
+        } else {
+            showSnackbarMessage(R.string.loading_tasks_error)
+            null
+        }
     }
 
     fun refresh() {
         // Refresh the repository and the task will be updated automatically.
-        if (task != null && task.getValue() != null) {
+        _task.value?.let {
+            _dataLoading.value = true
+            viewModelScope.launch {
+                repository.getDbRepository().getTaskById(it.id)
+                _dataLoading.value = false
+            }
         }
     }
 
-    private fun showSnackbarMessage(message: String) {
-        snackbarText.setValue(message)
+    private fun showSnackbarMessage(@StringRes message: Int) {
+        _snackbarText.value = Event(message)
     }
 
     companion object {
