@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import com.mobarak.todo.data.db.entity.Task
 import com.mobarak.todo.ui.base.AppApplication
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 /**
  * This Database repository implementation class, all business logic that related to database will be implemented here
@@ -50,7 +52,11 @@ class DbRepositoryImpl private constructor() : DbRepository {
 
     override suspend fun getTaskById(taskId: Long): Task? = db.taskDao().getTaskById(taskId)
 
-    override suspend fun insertTask(task: Task) = db.taskDao().insertTask(task)
+    override suspend fun insertTask(task: Task) {
+        coroutineScope {
+            launch { db.taskDao().insertTask(task) }
+        }
+    }
 
     override suspend fun updateTask(task: Task): Int {
         return db.taskDao().updateTask(task)

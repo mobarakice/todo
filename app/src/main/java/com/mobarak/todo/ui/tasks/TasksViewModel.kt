@@ -16,25 +16,27 @@ import java.util.*
 
 class TasksViewModel(private val repository: AppRepository,
                      private val savedStateHandle: SavedStateHandle) : ViewModel() {
-    private val _forceUpdate = MutableLiveData<Boolean>(false)
+    private val _forceUpdate = MutableLiveData(false)
 
     private val _items: LiveData<List<Task>> = _forceUpdate.switchMap { forceUpdate ->
         if (forceUpdate) {
             _dataLoading.value = true
-            viewModelScope.launch {
-                refresh()
-                _dataLoading.value = false
-            }
-        }
-        repository.getDbRepository()
-                .observeTasks()
-                .distinctUntilChanged()
-                .asLiveData()
-                .switchMap {
-                    liveData {
+            repository.getDbRepository()
+                    .observeTasks()
+                    .asLiveData()
+                    .map {
+                        _dataLoading.value = false
                         filterItems(it, getSavedFilterType())
                     }
-                }
+        } else {
+            repository.getDbRepository()
+                    .observeTasks()
+                    .distinctUntilChanged()
+                    .asLiveData()
+                    .map {
+                        filterItems(it, getSavedFilterType())
+                    }
+        }
     }
 
     val items: LiveData<List<Task>> = _items
@@ -170,11 +172,10 @@ class TasksViewModel(private val repository: AppRepository,
     }
 
     fun completeTask(task: Task, completed: Boolean) = viewModelScope.launch {
+        repository.getDbRepository().updateCompleted(task.id, completed)
         if (completed) {
-            repository.getDbRepository().updateTask(task)
             showSnackbarMessage(R.string.task_marked_complete)
         } else {
-            repository.getDbRepository().updateCompleted(task.id, completed)
             showSnackbarMessage(R.string.task_marked_active)
         }
     }

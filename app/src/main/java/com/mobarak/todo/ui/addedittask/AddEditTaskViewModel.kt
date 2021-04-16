@@ -92,7 +92,7 @@ class AddEditTaskViewModel(private val repository: AppRepository) : ViewModel() 
         }
 
         val currentTaskId = taskId
-        if (isNewTask || currentTaskId == null) {
+        if (isNewTask || currentTaskId == null || currentTaskId == 0L) {
             createTask(Task(currentTitle, currentDescription))
         } else {
             val task = Task(currentTitle, currentDescription, taskCompleted, currentTaskId)

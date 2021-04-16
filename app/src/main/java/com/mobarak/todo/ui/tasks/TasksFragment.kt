@@ -26,10 +26,6 @@ class TasksFragment : Fragment() {
     private lateinit var listAdapter: TasksAdapter
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?): View {
-//        val root = inflater.inflate(R.layout.tasks_frag, container, false);
-//        viewDataBinding = TasksFragBinding.bind(root).apply {
-//            viewmodel = viewModel
-//        }
         viewDataBinding = TasksFragBinding.inflate(inflater, container, false).apply {
             viewmodel = viewModel
         }
@@ -66,7 +62,7 @@ class TasksFragment : Fragment() {
         setupListAdapter()
         setupRefreshLayout(viewDataBinding.refreshLayout, viewDataBinding.tasksList)
         setupNavigation()
-        setupFab()
+//        setupFab()
     }
 
     private fun setupNavigation() {
@@ -105,7 +101,7 @@ class TasksFragment : Fragment() {
     }
 
     private fun setupFab() {
-        activity?.findViewById<FloatingActionButton>(R.id.add_task_fab)?.let {
+        view?.findViewById<FloatingActionButton>(R.id.add_task_fab)?.let {
             it.setOnClickListener {
                 navigateToAddNewTask()
             }
