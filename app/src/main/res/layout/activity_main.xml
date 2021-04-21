@@ -26,14 +26,6 @@
                 app:theme="@style/AppTheme.AppBarOverlay" />
         </com.google.android.material.appbar.AppBarLayout>
 
-        <!--        <fragment-->
-        <!--            android:id="@+id/nav_host_fragment"-->
-        <!--            android:name="androidx.navigation.fragment.NavHostFragment"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="match_parent"-->
-
-        <!--            app:defaultNavHost="true"-->
-        <!--            app:navGraph="@navigation/nav_graph" />-->
         <fragment
             android:id="@+id/nav_host_fragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
@@ -51,6 +43,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="?android:attr/windowBackground"
+        app:itemTextColor="@color/drawer_item_color"
+        app:itemIconTint="@color/drawer_item_color"
         app:menu="@menu/bottom_nav_menu" />
 
 </RelativeLayout>

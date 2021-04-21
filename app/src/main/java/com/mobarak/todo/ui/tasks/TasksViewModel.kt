@@ -84,9 +84,9 @@ class TasksViewModel(private val repository: AppRepository,
     /**
      * Sets the current task filtering type.
      *
-     * @param requestType Can be [TasksFilterType.ALL_TASKS],
-     * [TasksFilterType.COMPLETED_TASKS], or
-     * [TasksFilterType.ACTIVE_TASKS]
+     * @param requestType Can be [FilterType.ALL_TASKS],
+     * [FilterType.COMPLETED_TASKS], or
+     * [FilterType.ACTIVE_TASKS]
      */
     fun setFiltering(requestType: FilterType) {
         savedStateHandle.set(TASKS_FILTER_SAVED_STATE_KEY, requestType)
@@ -96,7 +96,7 @@ class TasksViewModel(private val repository: AppRepository,
             FilterType.ALL_TASKS -> {
                 setFilter(
                         R.string.label_all, R.string.no_tasks_all,
-                        R.drawable.logo_no_fill, true
+                        R.drawable.ic_no_task, true
                 )
             }
             FilterType.ACTIVE_TASKS -> {
@@ -129,7 +129,7 @@ class TasksViewModel(private val repository: AppRepository,
     }
 
     /**
-     * @param forceUpdate Pass in true to refresh the data in the [TasksDataSource]
+     * @param forceUpdate Pass in true to refresh the data in the [AppRepository]
      */
     fun loadTasks(forceUpdate: Boolean) {
         _forceUpdate.value = forceUpdate

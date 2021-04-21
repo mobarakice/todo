@@ -30,14 +30,14 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-//        navController.addOnDestinationChangedListener { controller, destination, arguments ->
-//            if (destination.id == R.id.tasks_fragment_dest
-//                    || destination.id == R.id.statistics_fragment_dest) {
-//                navView.visibility = View.VISIBLE
-//            } else {
-//                navView.visibility = View.GONE
-//            }
-//        }
+        navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            if (destination.id == R.id.tasks_fragment_dest
+                    || destination.id == R.id.statistics_fragment_dest) {
+                navView.visibility = View.VISIBLE
+            } else {
+                navView.visibility = View.GONE
+            }
+        }
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
         NavigationUI.setupWithNavController(navView, navController)
     }
