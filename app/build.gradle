@@ -4,13 +4,13 @@ apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs.kotlin"
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "30.0.3"
+    compileSdkVersion 33
+    buildToolsVersion '33.0.0'
 
     defaultConfig {
         applicationId "com.mobarak.todo"
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
 
@@ -100,7 +100,7 @@ dependencies {
     //retrofit
     implementation "com.squareup.retrofit2:retrofit:2.7.1"
     implementation "com.squareup.retrofit2:converter-gson:2.7.1"
-    implementation "com.squareup.okhttp3:logging-interceptor:4.3.1"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.9.0"
 
 
     // Dependencies for local unit tests
@@ -129,7 +129,7 @@ dependencies {
     // Once https://issuetracker.google.com/127986458 is fixed this can be testImplementation
 //    implementation "androidx.fragment:fragment-testing:$fragmentVersion"
     implementation "androidx.test:core:$androidXTestCoreVersion"
-    implementation "androidx.fragment:fragment:$fragmentVersion"
+    implementation "androidx.fragment:fragment-ktx:$fragmentVersion"
 
     // AndroidX Test - Instrumented testing
     androidTestImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
@@ -145,7 +145,7 @@ dependencies {
     implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
 
     // Resolve conflicts between main and test APK:
-    androidTestImplementation "androidx.annotation:annotation:$androidXAnnotations"
+    androidTestImplementation "androidx.annotation:annotation:1.5.0"
     androidTestImplementation "androidx.legacy:legacy-support-v4:$androidXLegacySupport"
     androidTestImplementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
     androidTestImplementation "androidx.appcompat:appcompat:$appCompatVersion"
